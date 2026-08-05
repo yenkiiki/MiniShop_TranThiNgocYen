@@ -1,0 +1,36 @@
+/* Áp dụng font Calibri cho toàn bộ web, trừ các icon FontAwesome (fa, fas, far, fab, fa-solid,...) */
+*:not(i):not([class*="fa-"]):not([class*="fa"]) {
+    font-family: Calibri, 'Segoe UI', Candara, Optima, Segoe, -apple-system, sans-serif !important;
+}
+
+/* Cấu hình hiển thị chữ mượt hơn */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+/* Custom CSS cho Giao diện Admin */
+body { 
+    background-color: #f8f9fa; 
+}
+.sidebar { 
+    min-height: 100vh; 
+    background-color: #212529; 
+}
+.sidebar .nav-link { 
+    color: rgba(255, 255, 255, 0.75); 
+    padding: 12px 20px; 
+}
+.sidebar .nav-link:hover, 
+.sidebar .nav-link.active { 
+    color: #fff; 
+    background-color: #0d6efd; 
+    border-radius: 4px; 
+}
+.sidebar .nav-link i { 
+    margin-right: 10px; 
+    width: 20px; 
+    text-align: center; 
+}
+.main-content { 
+    padding: 20px; 
+}

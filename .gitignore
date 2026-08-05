@@ -1,0 +1,27 @@
+# Thư mục chứa tài nguyên tải lên (Uploads)
+# Bỏ dấu # ở dòng dưới nếu không muốn đẩy ảnh lên Git
+# uploads/
+
+# File cấu hình môi trường & thông tin bảo mật
+.env
+.env.local
+config/database.php
+
+# IDE & Editor files (VS Code, PHPStorm, Hệ điều hành)
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+.DS_Store
+Thumbs.db
+
+# Thư mục thư viện bên thứ 3 (nếu dùng Composer hoặc NPM)
+/vendor/
+/node_modules/
+
+# Logs & Temp files
+*.log
+/tmp/
