@@ -1,20 +1,35 @@
 <?php
-class Product {
-    private $id;
-    private $categoryId;
-    private $brandId;
-    private $proname;
-    private $slug;
-    private $price;
-    private $discountPrice;
-    private $quantity;
-    private $image;
-    private $description;
-    private $status;
-    private $createdAt;
-    private $updatedAt;
 
-    public function __construct($id = null, $categoryId = null, $brandId = null, $proname = null, $slug = null, $price = 0, $discountPrice = 0, $quantity = 0, $image = null, $description = null, $status = 1, $createdAt = null, $updatedAt = null) {
+class Product {
+    private ?int $id;
+    private ?int $categoryId;
+    private ?int $brandId;
+    private string $proname;
+    private ?string $slug;
+    private float $price;
+    private float $discountPrice;
+    private int $quantity;
+    private ?string $image;
+    private ?string $description;
+    private int $status;
+    private ?string $createdAt;
+    private ?string $updatedAt;
+
+    public function __construct(
+        ?int $id = null,
+        ?int $categoryId = null,
+        ?int $brandId = null,
+        string $proname = '',
+        ?string $slug = null,
+        float $price = 0.0,
+        float $discountPrice = 0.0,
+        int $quantity = 0,
+        ?string $image = null,
+        ?string $description = null,
+        int $status = 1,
+        ?string $createdAt = null,
+        ?string $updatedAt = null
+    ) {
         $this->id = $id;
         $this->categoryId = $categoryId;
         $this->brandId = $brandId;
@@ -30,31 +45,168 @@ class Product {
         $this->updatedAt = $updatedAt;
     }
 
-    public function getId() { return $this->id; }
-    public function getCategoryId() { return $this->categoryId; }
-    public function getBrandId() { return $this->brandId; }
-    public function getProname() { return $this->proname; }
-    public function getSlug() { return $this->slug; }
-    public function getPrice() { return $this->price; }
-    public function getDiscountPrice() { return $this->discountPrice; }
-    public function getQuantity() { return $this->quantity; }
-    public function getImage() { return $this->image; }
-    public function getDescription() { return $this->description; }
-    public function getStatus() { return $this->status; }
-    public function getCreatedAt() { return $this->createdAt; }
-    public function getUpdatedAt() { return $this->updatedAt; }
+    // ==================== GETTERS ====================
+    
+    public function getId(): ?int { 
+        return $this->id; 
+    }
 
-    public function setId($id) { $this->id = $id; }
-    public function setCategoryId($categoryId) { $this->categoryId = $categoryId; }
-    public function setBrandId($brandId) { $this->brandId = $brandId; }
-    public function setProname($proname) { $this->proname = $proname; }
-    public function setSlug($slug) { $this->slug = $slug; }
-    public function setPrice($price) { $this->price = $price; }
-    public function setDiscountPrice($discountPrice) { $this->discountPrice = $discountPrice; }
-    public function setQuantity($quantity) { $this->quantity = $quantity; }
-    public function setImage($image) { $this->image = $image; }
-    public function setDescription($description) { $this->description = $description; }
-    public function setStatus($status) { $this->status = $status; }
-    public function setCreatedAt($createdAt) { $this->createdAt = $createdAt; }
-    public function setUpdatedAt($updatedAt) { $this->updatedAt = $updatedAt; }
+    public function getCategoryId(): ?int { 
+        return $this->categoryId; 
+    }
+
+    public function getBrandId(): ?int { 
+        return $this->brandId; 
+    }
+
+    public function getProname(): string { 
+        return $this->proname; 
+    }
+
+    public function getSlug(): ?string { 
+        return $this->slug; 
+    }
+
+    public function getPrice(): float { 
+        return $this->price; 
+    }
+
+    public function getDiscountPrice(): float { 
+        return $this->discountPrice; 
+    }
+
+    public function getQuantity(): int { 
+        return $this->quantity; 
+    }
+
+    public function getImage(): ?string { 
+        return $this->image; 
+    }
+
+    public function getDescription(): ?string { 
+        return $this->description; 
+    }
+
+    public function getStatus(): int { 
+        return $this->status; 
+    }
+
+    public function getCreatedAt(): ?string { 
+        return $this->createdAt; 
+    }
+
+    public function getUpdatedAt(): ?string { 
+        return $this->updatedAt; 
+    }
+
+    // ==================== SETTERS ====================
+
+    public function setId(?int $id): self { 
+        $this->id = $id; 
+        return $this; 
+    }
+
+    public function setCategoryId(?int $categoryId): self { 
+        $this->categoryId = $categoryId; 
+        return $this; 
+    }
+
+    public function setBrandId(?int $brandId): self { 
+        $this->brandId = $brandId; 
+        return $this; 
+    }
+
+    public function setProname(string $proname): self { 
+        $this->proname = $proname; 
+        return $this; 
+    }
+
+    public function setSlug(?string $slug): self { 
+        $this->slug = $slug; 
+        return $this; 
+    }
+
+    public function setPrice(float $price): self { 
+        $this->price = $price; 
+        return $this; 
+    }
+
+    public function setDiscountPrice(float $discountPrice): self { 
+        $this->discountPrice = $discountPrice; 
+        return $this; 
+    }
+
+    public function setQuantity(int $quantity): self { 
+        $this->quantity = $quantity; 
+        return $this; 
+    }
+
+    public function setImage(?string $image): self { 
+        $this->image = $image; 
+        return $this; 
+    }
+
+    public function setDescription(?string $description): self { 
+        $this->description = $description; 
+        return $this; 
+    }
+
+    public function setStatus(int $status): self { 
+        $this->status = $status; 
+        return $this; 
+    }
+
+    public function setCreatedAt(?string $createdAt): self { 
+        $this->createdAt = $createdAt; 
+        return $this; 
+    }
+
+    public function setUpdatedAt(?string $updatedAt): self { 
+        $this->updatedAt = $updatedAt; 
+        return $this; 
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Khởi tạo đối tượng từ mảng dữ liệu lấy từ Database (FETCH_ASSOC)
+     */
+    public static function fromArray(array $data): self {
+        return new self(
+            isset($data['id']) ? (int)$data['id'] : null,
+            isset($data['category_id']) ? (int)$data['category_id'] : null,
+            isset($data['brand_id']) ? (int)$data['brand_id'] : null,
+            $data['proname'] ?? '',
+            $data['slug'] ?? null,
+            isset($data['price']) ? (float)$data['price'] : 0.0,
+            isset($data['discount_price']) ? (float)$data['discount_price'] : 0.0,
+            isset($data['quantity']) ? (int)$data['quantity'] : 0,
+            $data['image'] ?? null,
+            $data['description'] ?? null,
+            isset($data['status']) ? (int)$data['status'] : 1,
+            $data['created_at'] ?? null,
+            $data['updated_at'] ?? null
+        );
+    }
+
+    /**
+     * Chuyển đổi đối tượng thành mảng dữ liệu tương ứng tên cột Database
+     */
+    public function toArray(): array {
+        return [
+            'id' => $this->id,
+            'category_id' => $this->categoryId,
+            'brand_id' => $this->brandId,
+            'proname' => $this->proname,
+            'slug' => $this->slug,
+            'price' => $this->price,
+            'discount_price' => $this->discountPrice,
+            'quantity' => $this->quantity,
+            'image' => $this->image,
+            'description' => $this->description,
+            'status' => $this->status,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
+        ];
+    }
 }
