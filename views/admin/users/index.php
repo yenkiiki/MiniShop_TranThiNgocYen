@@ -1,6 +1,12 @@
+<?php
+$pageTitle = "Quản Lý Tài Khoản Nhân Viên";
+
+ob_start();
+?>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="fw-bold">Quản Lý Tài Khoản Nhân Viên</h3>
-    <a href="#" class="btn btn-primary"><i class="fa-solid fa-user-plus me-1"></i>Tạo tài khoản</a>
+    <a href="create.php" class="btn btn-primary"><i class="fa-solid fa-user-plus me-1"></i>Tạo tài khoản</a>
 </div>
 
 <div class="card shadow-sm">
@@ -9,44 +15,60 @@
             <table class="table table-hover align-middle">
                 <thead class="table-dark">
                     <tr>
-                        <th>ID</th>
+                        <th class="text-center" style="width: 60px;">STT</th>
                         <th>Họ tên</th>
                         <th>Tên đăng nhập</th>
                         <th>Email</th>
                         <th>Vai trò</th>
                         <th>Trạng thái</th>
-                        <th class="text-center">Thao tác</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-center" style="width: 180px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($users)): ?>
-                        <?php foreach ($users as $u): ?>
+                        <?php $stt = 1; foreach ($users as $u): ?>
                             <tr>
-                                <td><?= $u->getId() ?></td>
-                                <td class="fw-bold"><?= htmlspecialchars($u->getFullname()) ?></td>
-                                <td><code><?= htmlspecialchars($u->getUsername()) ?></code></td>
-                                <td><?= htmlspecialchars($u->getEmail()) ?></td>
+                                <td class="text-center fw-bold"><?= $stt++ ?></td>
+                                <td class="fw-bold text-primary"><?= htmlspecialchars($u->getFullname() ?? '') ?></td>
+                                <td><code><?= htmlspecialchars($u->getUsername() ?? '') ?></code></td>
+                                <td><?= htmlspecialchars($u->getEmail() ?? '') ?></td>
                                 <td>
-                                    <span class="badge bg-<?= $u->getRole() == 1 ? 'danger' : 'info' ?>">
-                                        <?= $u->getRole() == 1 ? 'Quản trị' : 'Nhân viên' ?>
-                                    </span>
+                                    <?php if ($u->getRole() == 1): ?>
+                                        <span class="badge bg-danger"><i class="fa-solid fa-user-shield me-1"></i>Quản trị</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-info text-dark"><i class="fa-solid fa-user me-1"></i>Nhân viên</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    <span class="badge bg-<?= $u->getStatus() == 1 ? 'success' : 'secondary' ?>">
-                                        <?= $u->getStatus() == 1 ? 'Hoạt động' : 'Khóa' ?>
-                                    </span>
+                                    <?php if ($u->getStatus() == 1): ?>
+                                        <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Hoạt động</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary"><i class="fa-solid fa-lock me-1"></i>Khóa</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        <?= method_exists($u, 'getCreatedAt') && $u->getCreatedAt() ? date('d/m/Y H:i', strtotime($u->getCreatedAt())) : '---' ?>
+                                    </small>
                                 </td>
                                 <td class="text-center">
-                                    <a href="#" class="btn btn-sm btn-outline-warning"><i class="fa-solid fa-pen-to-square"></i></a>
-                                    <a href="#" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa tài khoản này?')"><i class="fa-solid fa-trash"></i></a>
+                                    <a href="detail.php?id=<?= $u->getId() ?>" class="btn btn-sm btn-outline-info" title="Chi tiết"><i class="fa-solid fa-eye"></i></a>
+                                    <a href="edit.php?id=<?= $u->getId() ?>" class="btn btn-sm btn-outline-warning" title="Chỉnh sửa"><i class="fa-solid fa-pen-to-square"></i></a>
+                                    <a href="delete.php?id=<?= $u->getId() ?>" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc muốn xóa tài khoản này?')"><i class="fa-solid fa-trash"></i></a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="7" class="text-center text-muted">Chưa có dữ liệu tài khoản</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">Chưa có dữ liệu tài khoản</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<?php
+$content = ob_get_clean();
+include __DIR__ . '/../layouts/master.php';
+?>

@@ -120,4 +120,5 @@ class BrandDAO extends BaseDAO
         throw $e;
     }
 }
+
 }

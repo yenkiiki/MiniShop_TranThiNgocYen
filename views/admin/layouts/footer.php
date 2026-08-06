@@ -9,6 +9,6 @@
 </footer>
 
 <!-- Bootstrap 5 JS Bundle với Popper (Đã sửa đường dẫn thành ../../) -->
-<script src="../../assets/bootstrap.bundle.min.js"></script>
+<script src="/MINISHOP_TRANTHINGOCYEN/assets/bootstrap.bundle.min.js"></script>
 </body>
 </html>

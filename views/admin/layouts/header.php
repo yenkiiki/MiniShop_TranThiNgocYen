@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Trị - Admin Dashboard</title>
+    <title><?= $pageTitle ?? 'Hệ Thống Quản Trị - Admin Dashboard' ?></title>
 
     <!-- FontAwesome 6 Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
-    <!-- Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="../../assets/bootstrap.min.css">
-    
-    <!-- File CSS chung của hệ thống (Đã gom toàn bộ style vào đây) -->
-    <link rel="stylesheet" href="../../assets/css/style.css">
+<!-- Sửa đường dẫn Bootstrap CSS thành tuyệt đối -->
+<link rel="stylesheet" href="/MINISHOP_TRANTHINGOCYEN/assets/bootstrap.min.css">
+
+<!-- Sửa đường dẫn FontAwesome hoặc file CSS custom nếu có -->
+<link rel="stylesheet" href="/MINISHOP_TRANTHINGOCYEN/assets/css/style.css">
 </head>
 <body>
 

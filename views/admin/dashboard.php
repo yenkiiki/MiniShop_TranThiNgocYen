@@ -1,3 +1,11 @@
+<?php
+// 1. Đặt tiêu đề trang (Header sẽ nhận biến này)
+$pageTitle = "Bảng Điều Khiển Tổng Quan";
+
+// 2. Bắt đầu bộ nhớ đệm
+ob_start();
+?>
+
 <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h3 class="fw-bold text-primary"><i class="fa-solid fa-gauge me-2"></i>Bảng Điều Khiển Tổng Quan</h3>
     <span class="text-muted"><i class="fa-regular fa-calendar-alt me-1"></i>Hôm nay: <?= date('d/m/Y') ?></span>
@@ -186,3 +194,11 @@
         </div>
     </div>
 </div>
+
+<?php
+// 3. Lấy nội dung gán vào $content và xả đệm
+$content = ob_get_clean();
+
+// 4. Nhúng master layout
+include __DIR__ . '/layouts/master.php';
+?>
