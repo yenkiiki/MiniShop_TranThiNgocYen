@@ -1,13 +1,13 @@
-<?php require_once __DIR__ . '/header.php'; ?>
+<?php include "header.php"; ?>
 
 <div class="container-fluid">
     <div class="row">
-        <?php require_once __DIR__ . '/sidebar.php'; ?>
+        <?php include "sidebar.php"; ?>
         
-        <main class="col py-3">
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
             <?= $content ?? '' ?>
-        </main>
+        </div>
     </div>
 </div>
 
-<?php require_once __DIR__ . '/footer.php'; ?>
+<?php include "footer.php"; ?>

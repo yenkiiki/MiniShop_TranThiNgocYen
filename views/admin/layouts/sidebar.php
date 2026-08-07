@@ -1,41 +1,54 @@
-<div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse min-vh-100">
-    <div class="position-sticky pt-3">
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse py-3 border-end">
+    <div class="position-sticky">
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mb-3 text-muted text-uppercase">
+            <span>Danh mục quản lý</span>
+        </h6>
         <ul class="nav flex-column">
             <li class="nav-item mb-1">
-                <a class="nav-link text-white" href="/MINISHOP_TRANTHINGOCYEN/views/admin/index.php?view=dashboard">
-                    <i class="fa-solid fa-gauge me-2"></i> Tổng quan
+                <a class="nav-link text-dark active" href="<?= BASE_URL ?>views/admin/dashboard.php">
+                    📊 Tổng quan (Dashboard)
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link text-white" href="/MINISHOP_TRANTHINGOCYEN/views/admin/index.php?view=categories">
-                    <i class="fa-solid fa-layer-group me-2"></i> Danh mục
+                <a class="nav-link text-dark" href="<?= BASE_URL ?>views/admin/categories/index.php">
+                    📁 Quản lý Danh mục
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link text-white" href="/MINISHOP_TRANTHINGOCYEN/views/admin/index.php?view=brands">
-                    <i class="fa-solid fa-copyright me-2"></i> Thương hiệu
+                <a class="nav-link text-dark" href="<?= BASE_URL ?>views/admin/brands/index.php">
+                    🏷️ Quản lý Thương hiệu
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link text-white" href="/MINISHOP_TRANTHINGOCYEN/views/admin/index.php?view=products">
-                    <i class="fa-solid fa-box-open me-2"></i> Sản phẩm
+                <a class="nav-link text-dark" href="<?= BASE_URL ?>views/admin/products/index.php">
+                    📦 Quản lý Sản phẩm
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link text-white" href="/MINISHOP_TRANTHINGOCYEN/views/admin/index.php?view=orders">
-                    <i class="fa-solid fa-file-invoice-dollar me-2"></i> Đơn hàng
+                <a class="nav-link text-dark" href="<?= BASE_URL ?>views/admin/customers/index.php">
+                    👥 Quản lý Khách hàng
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link text-white" href="/MINISHOP_TRANTHINGOCYEN/views/admin/index.php?view=customers">
-                    <i class="fa-solid fa-users me-2"></i> Khách hàng
+                <a class="nav-link text-dark" href="<?= BASE_URL ?>views/admin/users/index.php">
+                    🔒 Quản lý Tài khoản
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link text-white" href="/MINISHOP_TRANTHINGOCYEN/views/admin/index.php?view=users">
-                    <i class="fa-solid fa-user-shield me-2"></i> Tài khoản
+                <a class="nav-link text-dark" href="<?= BASE_URL ?>views/admin/orders/index.php">
+                    🛒 Quản lý Đơn hàng
+                </a>
+            </li>
+        </ul>
+
+        <hr class="my-3">
+
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link text-danger" href="<?= BASE_URL ?>index.php" target="_blank">
+                    🌐 Xem trang chủ Client
                 </a>
             </li>
         </ul>
     </div>
-</div>
+</nav>

@@ -8,7 +8,7 @@ class BaseDAO extends Database
         parent::__construct();
     }
 
-    // Thực thi câu lệnh SELECT cơ bản
+    // Thực thi câu lệnh SELECT
     protected function executeQuery(string $sql): mysqli_result|false
     {
         return $this->conn->query($sql);
@@ -41,8 +41,6 @@ class BaseDAO extends Database
     // Đóng kết nối
     public function close(): void
     {
-        if (isset($this->conn)) {
-            $this->conn->close();
-        }
+        $this->conn->close();
     }
 }

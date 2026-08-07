@@ -16,16 +16,16 @@ class BrandDAO extends BaseDAO
             $sql = "SELECT id, brandname, slug, image, description, status, created_at, updated_at FROM brands ORDER BY brandname";
             $result = $this->executeQuery($sql);
             while ($row = $result->fetch_assoc()) {
-                $list[] = new Brand(
-                    $row["id"],
-                    $row["brandname"],
-                    $row["slug"],
-                    $row["image"],
-                    $row["description"],
-                    $row["status"],
-                    $row["created_at"],
-                    $row["updated_at"]
-                );
+                $brand = new Brand();
+                $brand->id = (int)$row["id"];
+                $brand->brandName = $row["brandname"];
+                $brand->slug = $row["slug"];
+                $brand->image = $row["image"];
+                $brand->description = $row["description"];
+                $brand->status = (int)$row["status"];
+                $brand->createdAt = $row["created_at"];
+                $brand->updatedAt = $row["updated_at"];
+                $list[] = $brand;
             }
         } catch (Exception $e) {
             throw $e;
@@ -36,22 +36,22 @@ class BrandDAO extends BaseDAO
     public function findById(int $id): ?Brand
     {
         try {
-            $sql = "SELECT id, brandname, slug, image, description, status, created_at, updated_at FROM brands WHERE id = ?";
+            $sql = "SELECT id, brandname, slug, image, description, status, created_at, updated_at FROM brands WHERE id=?";
             $stmt = $this->prepare($sql);
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $result = $stmt->get_result();
             if ($row = $result->fetch_assoc()) {
-                return new Brand(
-                    $row["id"],
-                    $row["brandname"],
-                    $row["slug"],
-                    $row["image"],
-                    $row["description"],
-                    $row["status"],
-                    $row["created_at"],
-                    $row["updated_at"]
-                );
+                $brand = new Brand();
+                $brand->id = (int)$row["id"];
+                $brand->brandName = $row["brandname"];
+                $brand->slug = $row["slug"];
+                $brand->image = $row["image"];
+                $brand->description = $row["description"];
+                $brand->status = (int)$row["status"];
+                $brand->createdAt = $row["created_at"];
+                $brand->updatedAt = $row["updated_at"];
+                return $brand;
             }
         } catch (Exception $e) {
             throw $e;
@@ -62,16 +62,16 @@ class BrandDAO extends BaseDAO
     public function insert(Brand $brand): bool
     {
         try {
-            $sql = "INSERT INTO brands(brandname, slug, image, description, status) VALUES (?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO brands(brandname, slug, image, description, status) VALUES(?, ?, ?, ?, ?)";
             $stmt = $this->prepare($sql);
-
-            $brandname = $brand->getBrandname();
-            $slug = $brand->getSlug();
-            $image = $brand->getImage();
-            $description = $brand->getDescription();
-            $status = $brand->getStatus();
-
-            $stmt->bind_param("ssssi", $brandname, $slug, $image, $description, $status);
+            $stmt->bind_param(
+                "ssssi",
+                $brand->brandName,
+                $brand->slug,
+                $brand->image,
+                $brand->description,
+                $brand->status
+            );
             return $stmt->execute();
         } catch (Exception $e) {
             throw $e;
@@ -81,17 +81,17 @@ class BrandDAO extends BaseDAO
     public function update(Brand $brand): bool
     {
         try {
-            $sql = "UPDATE brands SET brandname = ?, slug = ?, image = ?, description = ?, status = ? WHERE id = ?";
+            $sql = "UPDATE brands SET brandname=?, slug=?, image=?, description=?, status=? WHERE id=?";
             $stmt = $this->prepare($sql);
-
-            $brandname = $brand->getBrandname();
-            $slug = $brand->getSlug();
-            $image = $brand->getImage();
-            $description = $brand->getDescription();
-            $status = $brand->getStatus();
-            $id = $brand->getId();
-
-            $stmt->bind_param("ssssii", $brandname, $slug, $image, $description, $status, $id);
+            $stmt->bind_param(
+                "ssssii",
+                $brand->brandName,
+                $brand->slug,
+                $brand->image,
+                $brand->description,
+                $brand->status,
+                $brand->id
+            );
             return $stmt->execute();
         } catch (Exception $e) {
             throw $e;
@@ -101,7 +101,7 @@ class BrandDAO extends BaseDAO
     public function delete(int $id): bool
     {
         try {
-            $sql = "DELETE FROM brands WHERE id = ?";
+            $sql = "DELETE FROM brands WHERE id=?";
             $stmt = $this->prepare($sql);
             $stmt->bind_param("i", $id);
             return $stmt->execute();
@@ -109,16 +109,17 @@ class BrandDAO extends BaseDAO
             throw $e;
         }
     }
-    public function count(): int
-{
-    try {
-        $sql = "SELECT COUNT(*) as total FROM brands";
-        $result = $this->executeQuery($sql);
-        $row = $result->fetch_assoc();
-        return (int)$row['total'];
-    } catch (Exception $e) {
-        throw $e;
+    public function countAll(): int
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM brands";
+            $result = $this->executeQuery($sql);
+            if ($row = $result->fetch_assoc()) {
+                return (int)$row["total"];
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return 0;
     }
-}
-
 }

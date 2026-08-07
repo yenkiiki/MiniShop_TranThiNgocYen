@@ -1,204 +1,245 @@
-<?php
-// 1. Đặt tiêu đề trang (Header sẽ nhận biến này)
-$pageTitle = "Bảng Điều Khiển Tổng Quan";
+    <?php
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
 
-// 2. Bắt đầu bộ nhớ đệm
-ob_start();
-?>
+    // Gọi file Database.php chứa cấu hình hệ thống
+    require_once "../../config/Database.php";
 
-<div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h3 class="fw-bold text-primary"><i class="fa-solid fa-gauge me-2"></i>Bảng Điều Khiển Tổng Quan</h3>
-    <span class="text-muted"><i class="fa-regular fa-calendar-alt me-1"></i>Hôm nay: <?= date('d/m/Y') ?></span>
-</div>
+    // Gọi các DAO cần thiết
+    require_once __DIR__ . "/../../dao/BrandDAO.php";
+    require_once __DIR__ . "/../../dao/CategoryDAO.php";
+    require_once __DIR__ . "/../../dao/CustomerDAO.php";
+    require_once __DIR__ . "/../../dao/OrderDAO.php";
+    require_once __DIR__ . "/../../dao/ProductDAO.php"; // Thêm dòng này vì phía dưới bạn có gọi ProductDAO
+    require_once __DIR__ . "/../../dao/UserDAO.php";
 
-<!-- THỐNG KÊ TỔNG QUAN (CARDS) -->
-<div class="row g-3 mb-4">
-    <!-- Danh mục -->
-    <div class="col-md-4 col-lg-2">
-        <div class="card bg-primary text-white shadow-sm h-100">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-uppercase fw-semibold">Danh mục</small>
-                        <h3 class="mb-0 fw-bold mt-1"><?= number_format($totalCategories ?? 0) ?></h3>
-                    </div>
-                    <i class="fa-solid fa-layer-group fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Thương hiệu -->
-    <div class="col-md-4 col-lg-2">
-        <div class="card bg-secondary text-white shadow-sm h-100">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-uppercase fw-semibold">Thương hiệu</small>
-                        <h3 class="mb-0 fw-bold mt-1"><?= number_format($totalBrands ?? 0) ?></h3>
-                    </div>
-                    <i class="fa-solid fa-copyright fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Sản phẩm -->
-    <div class="col-md-4 col-lg-2">
-        <div class="card bg-success text-white shadow-sm h-100">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-uppercase fw-semibold">Sản phẩm</small>
-                        <h3 class="mb-0 fw-bold mt-1"><?= number_format($totalProducts ?? 0) ?></h3>
-                    </div>
-                    <i class="fa-solid fa-box-open fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Khách hàng -->
-    <div class="col-md-4 col-lg-2">
-        <div class="card bg-info text-white shadow-sm h-100">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-uppercase fw-semibold">Khách hàng</small>
-                        <h3 class="mb-0 fw-bold mt-1"><?= number_format($totalCustomers ?? 0) ?></h3>
-                    </div>
-                    <i class="fa-solid fa-users fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Đơn hàng -->
-    <div class="col-md-4 col-lg-2">
-        <div class="card bg-warning text-dark shadow-sm h-100">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-uppercase fw-semibold">Đơn hàng</small>
-                        <h3 class="mb-0 fw-bold mt-1"><?= number_format($totalOrders ?? 0) ?></h3>
-                    </div>
-                    <i class="fa-solid fa-file-invoice-dollar fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Doanh thu -->
-    <div class="col-md-4 col-lg-2">
-        <div class="card bg-danger text-white shadow-sm h-100">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-uppercase fw-semibold">Doanh thu</small>
-                        <h4 class="mb-0 fw-bold mt-1"><?= number_format($totalRevenue ?? 0, 0, ',', '.') ?>đ</h4>
-                    </div>
-                    <i class="fa-solid fa-sack-dollar fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    // Khởi tạo các đối tượng DAO
+    $categoryDAO = new CategoryDAO();
+    $brandDAO = new BrandDAO();
+    $productDAO = new ProductDAO();
+    $customerDAO = new CustomerDAO();
+    $orderDAO = new OrderDAO();
 
-<!-- DỮ LIỆU MỚI NHẤT (TABLES) -->
-<div class="row g-4">
-    <!-- Top 5 Sản phẩm mới nhất -->
-    <div class="col-lg-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-box text-success me-2"></i>Sản phẩm mới nhất</h5>
-                <a href="index.php?view=products" class="btn btn-sm btn-outline-primary">Xem tất cả</a>
+    // Lấy số liệu thống kê tổng quan
+    $totalCategories = $categoryDAO->countAll();
+    $totalBrands = $brandDAO->countAll();
+    $totalProducts = $productDAO->countAll();
+    $totalCustomers = $customerDAO->countAll();
+    $totalOrders = $orderDAO->countAll();
+
+    // Lấy danh sách 5 sản phẩm mới nhất và 5 đơn hàng mới nhất
+    $latestProducts = $productDAO->getLatest(5);
+    $latestOrders = $orderDAO->getLatest(5);
+
+    $pageTitle = "Dashboard - Mini Shop";
+    ob_start();
+    ?>
+
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Dashboard</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item active">Tổng quan hệ thống quản trị Mini Shop</li>
+        </ol>
+
+        <!-- Các thẻ thống kê tổng quan (Widgets) -->
+        <div class="row">
+            <!-- Danh mục -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-primary text-white mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50">Tổng Danh Mục</div>
+                                <div class="fs-4 fw-bold"><?= $totalCategories ?></div>
+                            </div>
+                            <i class="fas fa-list fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="categories/index.php">Chi tiết</a>
+                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Ảnh</th>
-                                <th>Tên sản phẩm</th>
-                                <th>Giá bán</th>
-                                <th>Số lượng</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($latestProducts)): ?>
-                                <?php foreach ($latestProducts as $p): ?>
+
+            <!-- Thương hiệu -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-success text-white mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50">Tổng Thương Hiệu</div>
+                                <div class="fs-4 fw-bold"><?= $totalBrands ?></div>
+                            </div>
+                            <i class="fas fa-tags fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="brands/index.php">Chi tiết</a>
+                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sản phẩm -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-warning text-dark mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-black-50">Tổng Sản Phẩm</div>
+                                <div class="fs-4 fw-bold"><?= $totalProducts ?></div>
+                            </div>
+                            <i class="fas fa-box-open fa-2x text-black-50"></i>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-dark stretched-link" href="products/index.php">Chi tiết</a>
+                        <div class="small text-dark"><i class="fas fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Đơn hàng -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-danger text-white mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50">Tổng Đơn Hàng</div>
+                                <div class="fs-4 fw-bold"><?= $totalOrders ?></div>
+                            </div>
+                            <i class="fas fa-shopping-cart fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="orders/index.php">Chi tiết</a>
+                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khách hàng thống kê nhanh -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50">Tổng Khách Hàng</div>
+                                <div class="fs-4 fw-bold"><?= $totalCustomers ?></div>
+                            </div>
+                            <i class="fas fa-users fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="customers/index.php">Chi tiết</a>
+                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng hiển thị dữ liệu mới nhất -->
+        <div class="row">
+            <!-- 5 Sản phẩm mới nhất -->
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-box me-1"></i>
+                        05 Sản phẩm mới nhất
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped text-center align-middle">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <img src="../../uploads/products/<?= htmlspecialchars($p->getImage()) ?>" 
-                                                 class="rounded border" 
-                                                 width="40" 
-                                                 height="40" 
-                                                 style="object-fit: cover;" 
-                                                 alt="img" 
-                                                 onerror="this.onerror=null; this.src='https://placehold.co/40x40?text=No+Img';">
-                                        </td>
-                                        <td class="fw-semibold text-truncate" style="max-width: 180px;">
-                                            <?= htmlspecialchars($p->getProname()) ?>
-                                        </td>
-                                        <td class="text-danger fw-bold"><?= number_format($p->getPrice(), 0, ',', '.') ?>đ</td>
-                                        <td><span class="badge bg-secondary"><?= $p->getQuantity() ?></span></td>
+                                        <th>ID</th>
+                                        <th>Hình ảnh</th>
+                                        <th>Tên sản phẩm</th>
+                                        <th>Giá</th>
+                                        <th>Kho</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr><td colspan="4" class="text-center py-3 text-muted">Chưa có sản phẩm nào</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($latestProducts)): ?>
+                                        <?php foreach ($latestProducts as $p): ?>
+                                            <tr>
+                                                <td><?= $p->id ?></td>
+                                                <td>
+                                                    <?php if (!empty($p->image)): ?>
+                                                     <img src="<?= BASE_URL . 'uploads/products/' . $p->image ?>" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                                                    <?php else: ?>
+                                                        <span class="text-muted">No image</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-start"><?= htmlspecialchars($p->proName) ?></td>
+                                                <td><?= number_format($p->price, 0, ',', '.') ?> đ</td>
+                                                <td><?= $p->quantity ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="5" class="text-center">Chưa có sản phẩm nào.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Top 5 Đơn hàng mới nhất -->
-    <div class="col-lg-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-cart-shopping text-warning me-2"></i>Đơn hàng mới nhất</h5>
-                <a href="index.php?view=orders" class="btn btn-sm btn-outline-primary">Xem tất cả</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Mã đơn</th>
-                                <th>Tổng tiền</th>
-                                <th>Trạng thái</th>
-                                <th>Ngày tạo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($latestOrders)): ?>
-                                <?php foreach ($latestOrders as $o): ?>
+            <!-- 5 Đơn hàng mới nhất -->
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-shopping-bag me-1"></i>
+                        05 Đơn hàng mới nhất
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped text-center align-middle">
+                                <thead>
                                     <tr>
-                                        <td><span class="badge bg-dark"><?= htmlspecialchars($o->getOrderCode()) ?></span></td>
-                                        <td class="text-success fw-bold"><?= number_format($o->getTotalAmount(), 0, ',', '.') ?>đ</td>
-                                        <td>
-                                            <?php
-                                            $st = $o->getStatus();
-                                            if ($st == 0) echo '<span class="badge bg-warning text-dark">Chờ xử lý</span>';
-                                            elseif ($st == 1) echo '<span class="badge bg-success">Hoàn thành</span>';
-                                            else echo '<span class="badge bg-danger">Đã hủy</span>';
-                                            ?>
-                                        </td>
-                                        <td class="small text-muted"><?= date('d/m/Y H:i', strtotime($o->getCreatedAt())) ?></td>
+                                        <th>Mã ĐH</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày tạo</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr><td colspan="4" class="text-center py-3 text-muted">Chưa có đơn hàng nào</td></tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($latestOrders)): ?>
+                                        <?php foreach ($latestOrders as $o): ?>
+                                            <tr>
+                                                <td><strong><?= htmlspecialchars($o->orderCode) ?></strong></td>
+                                                <td><?= number_format($o->totalAmount, 0, ',', '.') ?> đ</td>
+                                                <td>
+                                                    <?php if ($o->status == 1): ?>
+                                                        <span class="badge bg-success">Đã xử lý</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td><?= $o->createdAt ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" class="text-center">Chưa có đơn hàng nào.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<?php
-// 3. Lấy nội dung gán vào $content và xả đệm
-$content = ob_get_clean();
-
-// 4. Nhúng master layout
-include __DIR__ . '/layouts/master.php';
-?>
+    <?php
+    $content = ob_get_clean();
+    include "layouts/master.php";
+    ?>
