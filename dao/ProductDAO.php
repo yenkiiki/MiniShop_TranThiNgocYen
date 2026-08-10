@@ -10,12 +10,30 @@ class ProductDAO extends BaseDAO
         parent::__construct();
     }
 
-    public function getAll(): array
+   public function getAll(string $keyword = ""): array
     {
         $list = [];
         try {
-            $sql = "SELECT id, category_id, brand_id, proname, slug, price, discount_price, quantity, image, description, status, created_at, updated_at FROM products ORDER BY id DESC";
-            $result = $this->executeQuery($sql);
+            $sql = "SELECT p.*, c.catename, b.brandname 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    LEFT JOIN brands b ON p.brand_id = b.id";
+            
+            if (!empty($keyword)) {
+                $sql .= " WHERE p.proname LIKE ? OR p.slug LIKE ?";
+            }
+            $sql .= " ORDER BY p.id DESC";
+
+            if (!empty($keyword)) {
+                $stmt = $this->prepare($sql);
+                $searchTerm = "%" . $keyword . "%";
+                $stmt->bind_param("ss", $searchTerm, $searchTerm);
+                $stmt->execute();
+                $result = $stmt->get_result();
+            } else {
+                $result = $this->executeQuery($sql);
+            }
+
             while ($row = $result->fetch_assoc()) {
                 $product = new Product();
                 $product->id = (int)$row["id"];
@@ -31,6 +49,11 @@ class ProductDAO extends BaseDAO
                 $product->status = (int)$row["status"];
                 $product->createdAt = $row["created_at"];
                 $product->updatedAt = $row["updated_at"];
+                
+                // Lấy tên danh mục và thương hiệu từ bảng JOIN
+                $product->cateName = $row["catename"] ?? 'Chưa phân loại';
+                $product->brandName = $row["brandname"] ?? 'Không có thương hiệu';
+
                 $list[] = $product;
             }
         } catch (Exception $e) {

@@ -201,4 +201,15 @@ class OrderDAO extends BaseDAO
         }
         return $list;
     }
+    public function updateStatus(int $id, int $status): bool
+    {
+        try {
+            $sql = "UPDATE orders SET status = ? WHERE id = ?";
+            $stmt = $this->prepare($sql);
+            $stmt->bind_param("ii", $status, $id);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
 }

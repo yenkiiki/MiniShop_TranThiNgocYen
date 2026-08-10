@@ -1,76 +1,190 @@
 <?php
-$pageTitle = "Quản Lý Sản Phẩm";
+// Bật hiển thị lỗi để dễ debug
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
+// Gọi các DAO cần thiết
+require_once __DIR__ . "/../../../config/Database.php";
+require_once __DIR__ . "/../../../dao/ProductDAO.php";
+
+$productDAO = new ProductDAO();
+$message = "";
+$error = "";
+
+// XỬ LÝ XÓA SẢN PHẨM KHI NHẤN NÚT XÓA (METHOD POST)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnDelete'])) {
+    $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+
+    if ($id > 0) {
+        try {
+            $result = $productDAO->delete($id);
+            if ($result) {
+                header("Location: index.php?msg=delete_success");
+                exit();
+            } else {
+                $error = "Xóa sản phẩm thất bại. Vui lòng thử lại!";
+            }
+        } catch (Exception $e) {
+            $error = "Không thể xóa sản phẩm này do ràng buộc dữ liệu!";
+        }
+    }
+}
+
+// Kiểm tra thông báo thành công từ URL
+if (isset($_GET['msg']) && $_GET['msg'] === 'delete_success') {
+    $message = "Xóa sản phẩm thành công!";
+}
+
+// NHẬN TỪ KHÓA TỪ FORM GET
+$keyword = "";
+if (isset($_GET["keyword"])) {
+    $keyword = trim($_GET["keyword"]);
+}
+
+// Lấy danh sách sản phẩm theo từ khóa
+$products = $productDAO->getAll($keyword);
+
+// Đặt tiêu đề trang
+$pageTitle = "Quản lý sản phẩm - Mini Shop";
+
+// Bắt đầu buffer nội dung để truyền vào layout chung
 ob_start();
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold">Quản Lý Sản Phẩm</h3>
-    <a href="create.php" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i>Thêm sản phẩm</a>
-</div>
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Quản lý sản phẩm</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
+        <li class="breadcrumb-item active">Danh sách sản phẩm</li>
+    </ol>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th class="text-center" style="width: 60px;">STT</th>
-                        <th>Ảnh</th>
-                        <th>Tên sản phẩm</th>
-                        <th>Giá bán</th>
-                        <th>Giá KM</th>
-                        <th>Số lượng</th>
-                        <th>Trạng thái</th>
-                        <th>Ngày tạo</th>
-                        <th class="text-center" style="width: 180px;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (!empty($products)): ?>
-                        <?php $stt = 1; foreach ($products as $p): ?>
+    <!-- HIỂN THỊ THÔNG BÁO THÀNH CÔNG HOẶC LỖI -->
+    <?php if (!empty($message)): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= $message ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($error)): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= $error ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <!-- FORM TÌM KIẾM CƠ BẢN -->
+    <form method="GET" class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" name="keyword" class="form-control" placeholder="Nhập từ khóa sản phẩm..."
+                value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Tìm kiếm
+            </button>
+        </div>
+    </form>
+
+    <!-- Thẻ chứa bảng dữ liệu sản phẩm -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-box me-1"></i>
+                Danh sách sản phẩm
+            </div>
+            <!-- Nút Thêm mới -->
+            <a href="create.php" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Thêm mới
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Hình ảnh</th>
+                            <th class="text-start">Tên sản phẩm</th>
+                            <th>Danh mục</th>
+                            <th>Thương hiệu</th>
+                            <th>Giá</th>
+                            <th>Kho</th>
+                            <th>Trạng thái</th>
+                            <th>Chức năng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($products)): ?>
+                            <?php $stt = 1; ?>
+                            <?php foreach ($products as $pro): ?>
+                                <tr>
+                                    <td><?= $stt++ ?></td>
+                                    <td>
+                                        <?php if (!empty($pro->image)): ?>
+                                            <img src="../../../uploads/products/<?= htmlspecialchars($pro->image) ?>" alt=""
+                                                width="50" height="50" style="object-fit: cover;" class="rounded">
+                                        <?php else: ?>
+                                            <span class="text-muted small">Không có ảnh</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-start fw-bold"><?= htmlspecialchars($pro->proName) ?></td>
+                                    <!-- Hiển thị Tên danh mục thay vì ID -->
+                                    <td><?= htmlspecialchars($pro->cateName) ?></td>
+                                    <!-- Hiển thị Tên thương hiệu thay vì ID -->
+                                    <td><?= htmlspecialchars($pro->brandName) ?></td>
+                                    <td>
+                                        <span class="text-danger fw-bold"><?= number_format($pro->price, 0, ',', '.') ?>
+                                            đ</span>
+                                    </td>
+                                    <td><?= $pro->quantity ?></td>
+                                    <td>
+                                        <?php if ($pro->status == 1): ?>
+                                            <span class="badge bg-success">Hiển thị</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary">Ẩn</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <div class="d-inline-flex align-items-center gap-1">
+                                            <!-- Nút Chi tiết -->
+                                            <a href="detail.php?id=<?= $pro->id ?>" class="btn btn-info text-white btn-sm"
+                                                title="Chi tiết">
+                                                <i class="fas fa-eye"></i> Xem
+                                            </a>
+
+                                            <!-- Nút Sửa -->
+                                            <a href="edit.php?id=<?= $pro->id ?>" class="btn btn-warning text-white btn-sm"
+                                                title="Sửa">
+                                                <i class="fas fa-edit"></i> Sửa
+                                            </a>
+
+                                            <!-- FORM XÓA CHUẨN POST -->
+                                            <form method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');"
+                                                style="display:inline-block; margin: 0;">
+                                                <input type="hidden" name="id" value="<?= $pro->id ?>">
+                                                <button type="submit" name="btnDelete" class="btn btn-danger btn-sm"
+                                                    title="Xóa">
+                                                    <i class="fas fa-trash"></i> Xóa
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
                             <tr>
-                                <td class="text-center fw-bold"><?= $stt++ ?></td>
-                                <td>
-                                    <?php if ($p->getImage()): ?>
-                                        <img src="../../uploads/products/<?= $p->getImage() ?>" class="rounded border" width="50" height="50" style="object-fit: cover;" alt="prod">
-                                    <?php else: ?>
-                                        <span class="badge bg-light text-dark border">No img</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="fw-bold"><?= htmlspecialchars($p->getProname() ?? '') ?></td>
-                                <td class="text-primary fw-bold"><?= number_format($p->getPrice(), 0, ',', '.') ?>đ</td>
-                                <td class="text-danger fw-bold"><?= number_format($p->getDiscountPrice(), 0, ',', '.') ?>đ</td>
-                                <td><span class="badge bg-info text-dark"><?= $p->getQuantity() ?></span></td>
-                                <td>
-                                    <?php if ($p->getStatus() == 1): ?>
-                                        <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Đang bán</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-secondary"><i class="fa-solid fa-ban me-1"></i>Ngừng bán</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <small class="text-muted">
-                                        <?= method_exists($p, 'getCreatedAt') && $p->getCreatedAt() ? date('d/m/Y H:i', strtotime($p->getCreatedAt())) : '---' ?>
-                                    </small>
-                                </td>
-                                <td class="text-center">
-                                    <a href="detail.php?id=<?= $p->getId() ?>" class="btn btn-sm btn-outline-info" title="Chi tiết"><i class="fa-solid fa-eye"></i></a>
-                                    <a href="edit.php?id=<?= $p->getId() ?>" class="btn btn-sm btn-outline-warning" title="Chỉnh sửa"><i class="fa-solid fa-pen-to-square"></i></a>
-                                    <a href="delete.php?id=<?= $p->getId() ?>" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')"><i class="fa-solid fa-trash"></i></a>
-                                </td>
+                                <td colspan="9" class="text-center text-muted py-3">Không tìm thấy dữ liệu.</td>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr><td colspan="9" class="text-center text-muted py-4">Chưa có dữ liệu sản phẩm</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <?php
 $content = ob_get_clean();
-include __DIR__ . '/../layouts/master.php';
+include "../layouts/master.php";
 ?>
