@@ -27,9 +27,6 @@ if (!$productOld) {
     exit();
 }
 
-// ==========================================
-// XỬ LÝ XÓA ẢNH PHỤ TRỰC TIẾP TRONG FILE NÀY
-// ==========================================
 if (isset($_GET['action']) && $_GET['action'] == 'delete_sub') {
     $imageId = isset($_GET['image_id']) ? (int)$_GET['image_id'] : 0;
     
@@ -37,7 +34,6 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete_sub') {
         $productImages = $productDAO->getImagesByProductId($id);
         foreach ($productImages as $img) {
             if ($img->id === $imageId) {
-                // Xóa file vật lý
                 $filePath = __DIR__ . "/../../../uploads/products/" . $img->image;
                 if (file_exists($filePath)) {
                     @unlink($filePath);
@@ -45,18 +41,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete_sub') {
                 break;
             }
         }
-        // Xóa trong database
         $productDAO->deleteImage($imageId);
     }
     
-    // Ở lại trang edit.php của sản phẩm hiện tại
     header("Location: edit.php?id=" . $id);
     exit();
 }
 
-// ==========================================
-// XỬ LÝ SUBMIT CẬP NHẬT SẢN PHẨM
-// ==========================================
 $categories = $categoryDAO->getAll();
 $brands = $brandDAO->getAll();
 
@@ -133,7 +124,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             $productDAO->update($productOld);
 
-            // Xử lý thêm mới ảnh phụ nếu có upload thêm
             if (isset($_FILES['sub_images']) && !empty($_FILES['sub_images']['name'][0])) {
                 foreach ($_FILES['sub_images']['name'] as $key => $subName) {
                     if ($_FILES['sub_images']['error'][$key] == UPLOAD_ERR_OK) {
@@ -191,7 +181,6 @@ ob_start();
         </div>
         <div class="card-body">
             <form action="" method="POST" enctype="multipart/form-data">
-                
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="proName" class="form-label fw-bold">Tên sản phẩm <span class="text-danger">*</span></label>
@@ -240,7 +229,6 @@ ob_start();
                 </div>
 
                 <div class="row mb-3">
-                    <!-- Ảnh chính -->
                     <div class="col-md-6 border-end">
                         <label class="form-label fw-bold text-primary">Hình ảnh chính</label>
                         <div class="text-center mb-3">
@@ -256,10 +244,8 @@ ob_start();
                         </div>
                     </div>
 
-                    <!-- Ảnh phụ (Gallery) -->
                     <div class="col-md-6">
                         <label class="form-label fw-bold text-success">Hình ảnh phụ (Gallery)</label>
-                        
                         <?php 
                         $currentImages = $productDAO->getImagesByProductId($id);
                         if (!empty($currentImages)): 
@@ -268,7 +254,6 @@ ob_start();
                                 <?php foreach ($currentImages as $subImg): ?>
                                     <div class="border p-2 rounded text-center bg-light" style="width: 100px;">
                                         <img src="../../../uploads/products/<?= htmlspecialchars($subImg->image) ?>" width="80" height="70" class="object-fit-cover rounded mb-2" alt="">
-                                        <!-- Nút Xóa gọi lại chính file edit.php kèm action=delete_sub -->
                                         <a href="edit.php?id=<?= $id ?>&action=delete_sub&image_id=<?= $subImg->id ?>" 
                                            class="btn btn-danger btn-sm w-100" 
                                            style="font-size: 11px;"

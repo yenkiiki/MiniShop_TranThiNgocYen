@@ -249,4 +249,48 @@ public function insert(Product $product): int
         }
         return $list;
     }
+    public function getPage(int $limit, int $offset): array
+{
+    $list = [];
+    try {
+        $sql = "SELECT p.*, c.catename, b.brandname 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                LEFT JOIN brands b ON p.brand_id = b.id 
+                ORDER BY p.id DESC 
+                LIMIT ? OFFSET ?";
+                
+        $stmt = $this->prepare($sql);
+        $stmt->bind_param("ii", $limit, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $product = new Product();
+            $product->id = (int)$row["id"];
+            $product->categoryId = (int)$row["category_id"];
+            $product->brandId = (int)$row["brand_id"];
+            $product->proName = $row["proname"];
+            $product->slug = $row["slug"];
+            $product->price = (float)$row["price"];
+            $product->discountPrice = (float)$row["discount_price"];
+            $product->quantity = (int)$row["quantity"];
+            $product->image = $row["image"];
+            $product->description = $row["description"];
+            $product->status = (int)$row["status"];
+            $product->createdAt = $row["created_at"];
+            $product->updatedAt = $row["updated_at"];
+            
+            // Lấy tên danh mục và thương hiệu từ bảng JOIN
+            $product->cateName = $row["catename"] ?? 'Chưa phân loại';
+            $product->brandName = $row["brandname"] ?? 'Không có thương hiệu';
+
+            $list[] = $product;
+        }
+    } catch (Exception $e) {
+        throw $e;
+    }
+    return $list;
+}
+    
 }

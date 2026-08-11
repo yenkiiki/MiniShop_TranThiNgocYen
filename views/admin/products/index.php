@@ -1,9 +1,7 @@
 <?php
-// Bật hiển thị lỗi để dễ debug
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Gọi các DAO cần thiết
 require_once __DIR__ . "/../../../config/Database.php";
 require_once __DIR__ . "/../../../dao/ProductDAO.php";
 
@@ -11,7 +9,6 @@ $productDAO = new ProductDAO();
 $message = "";
 $error = "";
 
-// XỬ LÝ XÓA SẢN PHẨM KHI NHẤN NÚT XÓA (METHOD POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnDelete'])) {
     $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
@@ -30,24 +27,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnDelete'])) {
     }
 }
 
-// Kiểm tra thông báo thành công từ URL
 if (isset($_GET['msg']) && $_GET['msg'] === 'delete_success') {
     $message = "Xóa sản phẩm thành công!";
 }
 
-// NHẬN TỪ KHÓA TỪ FORM GET
-$keyword = "";
-if (isset($_GET["keyword"])) {
-    $keyword = trim($_GET["keyword"]);
-}
+// --- Cấu hình thông số phân trang ---
+$limit = 10;
+$page = (int)($_GET["page"] ?? 1);
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
 
-// Lấy danh sách sản phẩm theo từ khóa
-$products = $productDAO->getAll($keyword);
+// Lấy tổng số sản phẩm và tính tổng số trang
+$totalRecords = $productDAO->count("products");
+$totalPages = ceil($totalRecords / $limit);
 
-// Đặt tiêu đề trang
+// Lấy danh sách sản phẩm theo trang
+$products = $productDAO->getPage($limit, $offset);
 $pageTitle = "Quản lý sản phẩm - Mini Shop";
 
-// Bắt đầu buffer nội dung để truyền vào layout chung
 ob_start();
 ?>
 
@@ -58,7 +55,6 @@ ob_start();
         <li class="breadcrumb-item active">Danh sách sản phẩm</li>
     </ol>
 
-    <!-- HIỂN THỊ THÔNG BÁO THÀNH CÔNG HOẶC LỖI -->
     <?php if (!empty($message)): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <?= $message ?>
@@ -73,27 +69,9 @@ ob_start();
         </div>
     <?php endif; ?>
 
-    <!-- FORM TÌM KIẾM CƠ BẢN -->
-    <form method="GET" class="row mb-3">
-        <div class="col-md-4">
-            <input type="text" name="keyword" class="form-control" placeholder="Nhập từ khóa sản phẩm..."
-                value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-search"></i> Tìm kiếm
-            </button>
-        </div>
-    </form>
-
-    <!-- Thẻ chứa bảng dữ liệu sản phẩm -->
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-                <i class="fas fa-box me-1"></i>
-                Danh sách sản phẩm
-            </div>
-            <!-- Nút Thêm mới -->
+            <div><i class="fas fa-box me-1"></i> Danh sách sản phẩm</div>
             <a href="create.php" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Thêm mới
             </a>
@@ -116,7 +94,7 @@ ob_start();
                     </thead>
                     <tbody>
                         <?php if (!empty($products)): ?>
-                            <?php $stt = 1; ?>
+                            <?php $stt = $offset + 1; ?>
                             <?php foreach ($products as $pro): ?>
                                 <tr>
                                     <td><?= $stt++ ?></td>
@@ -129,13 +107,10 @@ ob_start();
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-start fw-bold"><?= htmlspecialchars($pro->proName) ?></td>
-                                    <!-- Hiển thị Tên danh mục thay vì ID -->
                                     <td><?= htmlspecialchars($pro->cateName) ?></td>
-                                    <!-- Hiển thị Tên thương hiệu thay vì ID -->
                                     <td><?= htmlspecialchars($pro->brandName) ?></td>
                                     <td>
-                                        <span class="text-danger fw-bold"><?= number_format($pro->price, 0, ',', '.') ?>
-                                            đ</span>
+                                        <span class="text-danger fw-bold"><?= number_format($pro->price, 0, ',', '.') ?> đ</span>
                                     </td>
                                     <td><?= $pro->quantity ?></td>
                                     <td>
@@ -147,24 +122,15 @@ ob_start();
                                     </td>
                                     <td class="text-nowrap">
                                         <div class="d-inline-flex align-items-center gap-1">
-                                            <!-- Nút Chi tiết -->
-                                            <a href="detail.php?id=<?= $pro->id ?>" class="btn btn-info text-white btn-sm"
-                                                title="Chi tiết">
+                                            <a href="detail.php?id=<?= $pro->id ?>" class="btn btn-info text-white btn-sm" title="Chi tiết">
                                                 <i class="fas fa-eye"></i> Xem
                                             </a>
-
-                                            <!-- Nút Sửa -->
-                                            <a href="edit.php?id=<?= $pro->id ?>" class="btn btn-warning text-white btn-sm"
-                                                title="Sửa">
+                                            <a href="edit.php?id=<?= $pro->id ?>" class="btn btn-warning text-white btn-sm" title="Sửa">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>
-
-                                            <!-- FORM XÓA CHUẨN POST -->
-                                            <form method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');"
-                                                style="display:inline-block; margin: 0;">
+                                            <form method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');" style="display:inline-block; margin: 0;">
                                                 <input type="hidden" name="id" value="<?= $pro->id ?>">
-                                                <button type="submit" name="btnDelete" class="btn btn-danger btn-sm"
-                                                    title="Xóa">
+                                                <button type="submit" name="btnDelete" class="btn btn-danger btn-sm" title="Xóa">
                                                     <i class="fas fa-trash"></i> Xóa
                                                 </button>
                                             </form>
@@ -180,6 +146,28 @@ ob_start();
                     </tbody>
                 </table>
             </div>
+
+            <!-- Thanh phân trang (Pagination) -->
+            <?php if ($totalPages > 1): ?>
+                <nav class="d-flex justify-content-center mt-4">
+                    <ul class="pagination">
+                        <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                            <a class="page-link" href="?page=<?= $page - 1 ?>">Trước</a>
+                        </li>
+                        
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        
+                        <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                            <a class="page-link" href="?page=<?= $page + 1 ?>">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
+            <?php endif; ?>
+
         </div>
     </div>
 </div>
