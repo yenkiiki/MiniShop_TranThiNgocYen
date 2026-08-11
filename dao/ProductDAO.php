@@ -249,48 +249,81 @@ public function insert(Product $product): int
         }
         return $list;
     }
-    public function getPage(int $limit, int $offset): array
-{
-    $list = [];
-    try {
-        $sql = "SELECT p.*, c.catename, b.brandname 
-                FROM products p 
-                LEFT JOIN categories c ON p.category_id = c.id 
-                LEFT JOIN brands b ON p.brand_id = b.id 
-                ORDER BY p.id DESC 
-                LIMIT ? OFFSET ?";
-                
-        $stmt = $this->prepare($sql);
-        $stmt->bind_param("ii", $limit, $offset);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        while ($row = $result->fetch_assoc()) {
-            $product = new Product();
-            $product->id = (int)$row["id"];
-            $product->categoryId = (int)$row["category_id"];
-            $product->brandId = (int)$row["brand_id"];
-            $product->proName = $row["proname"];
-            $product->slug = $row["slug"];
-            $product->price = (float)$row["price"];
-            $product->discountPrice = (float)$row["discount_price"];
-            $product->quantity = (int)$row["quantity"];
-            $product->image = $row["image"];
-            $product->description = $row["description"];
-            $product->status = (int)$row["status"];
-            $product->createdAt = $row["created_at"];
-            $product->updatedAt = $row["updated_at"];
+  public function getPage(int $limit, int $offset, string $keyword = ""): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT p.*, c.catename, b.brandname 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    LEFT JOIN brands b ON p.brand_id = b.id";
             
-            // Lấy tên danh mục và thương hiệu từ bảng JOIN
-            $product->cateName = $row["catename"] ?? 'Chưa phân loại';
-            $product->brandName = $row["brandname"] ?? 'Không có thương hiệu';
+            if (!empty($keyword)) {
+                $sql .= " WHERE p.proname LIKE ? OR p.slug LIKE ?";
+            }
+            
+            $sql .= " ORDER BY p.id DESC LIMIT ? OFFSET ?";
+            
+            $stmt = $this->prepare($sql);
+            
+            if (!empty($keyword)) {
+                $searchTerm = "%" . trim($keyword) . "%";
+                $stmt->bind_param("ssii", $searchTerm, $searchTerm, $limit, $offset);
+            } else {
+                $stmt->bind_param("ii", $limit, $offset);
+            }
 
-            $list[] = $product;
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $product = new Product();
+                $product->id = (int)$row["id"];
+                $product->categoryId = (int)$row["category_id"];
+                $product->brandId = (int)$row["brand_id"];
+                $product->proName = $row["proname"];
+                $product->slug = $row["slug"];
+                $product->price = (float)$row["price"];
+                $product->discountPrice = (float)$row["discount_price"];
+                $product->quantity = (int)$row["quantity"];
+                $product->image = $row["image"];
+                $product->description = $row["description"];
+                $product->status = (int)$row["status"];
+                $product->createdAt = $row["created_at"];
+                $product->updatedAt = $row["updated_at"];
+                
+                $product->cateName = $row["catename"] ?? 'Chưa phân loại';
+                $product->brandName = $row["brandname"] ?? 'Không có thương hiệu';
+
+                $list[] = $product;
+            }
+        } catch (Exception $e) {
+            throw $e;
         }
-    } catch (Exception $e) {
-        throw $e;
+        return $list;
     }
-    return $list;
-}
-    
+    public function count(string $table = "products", string $column = "proname", string $keyword = ""): int
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM products p";
+            
+            if (!empty($keyword)) {
+                $sql .= " WHERE p.proname LIKE ? OR p.slug LIKE ?";
+                $stmt = $this->prepare($sql);
+                $searchTerm = "%" . trim($keyword) . "%";
+                $stmt->bind_param("ss", $searchTerm, $searchTerm);
+            } else {
+                $stmt = $this->prepare($sql);
+            }
+            
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                return (int)$row["total"];
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return 0;
+    }
 }
