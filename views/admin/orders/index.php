@@ -44,53 +44,32 @@ if (isset($_GET['msg']) && $_GET['msg'] === 'update_success') {
     $message = "Cập nhật trạng thái đơn hàng thành công!";
 }
 
-// --- NHẬN CÁC TIÊU CHÍ TỪ FORM TÌM KIẾM (METHOD GET) ---
+// --- NHẬN CÁC THAM SỐ TÌM KIẾM, LỌC, PHÂN TRANG VÀ LIMIT ---
 $keyword = isset($_GET["keyword"]) ? trim($_GET["keyword"]) : "";
 $searchStatus = isset($_GET["search_status"]) && $_GET["search_status"] !== "" ? (int)$_GET["search_status"] : "";
 
+// Giới hạn số bản ghi trên trang (Mặc định 10, hỗ trợ 10, 20, 30)
+$limit = (int)($_GET["limit"] ?? 2);
+if (!in_array($limit, [10, 20, 30])) {
+    $limit = 2;
+}
+
+$page = (int)($_GET["page"] ?? 1);
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
+
+// Tính toán tổng số bản ghi và tổng số trang
+$totalRecords = $orderDAO->countSearch($keyword, $searchStatus);
+$totalPages = $totalRecords > 0 ? ceil($totalRecords / $limit) : 1;
+
+if ($page > $totalPages) {
+    $page = $totalPages;
+}
+
+// Lấy dữ liệu phân trang
 $orders = [];
 try {
-    $db = new Database();
-    $conn = $db->getConnection();
-
-    // Xây dựng câu lệnh SQL cơ bản có sử dụng JOIN để lấy tên khách hàng và nhân viên
-    $sql = "SELECT o.*, c.fullname as customer_name, u.fullname as user_name 
-            FROM orders o 
-            LEFT JOIN customers c ON o.customer_id = c.id 
-            LEFT JOIN users u ON o.user_id = u.id WHERE 1=1";
-    
-    $params = [];
-    $types = "";
-
-    // 1. Tìm theo Mã đơn hàng hoặc Tên khách hàng (nếu có nhập keyword)
-    if (!empty($keyword)) {
-        $sql .= " AND (o.order_code LIKE ? OR c.fullname LIKE ?)";
-        $searchTerm = "%" . $keyword . "%";
-        $params[] = $searchTerm;
-        $params[] = $searchTerm;
-        $types .= "ss";
-    }
-
-    // 2. Tìm theo Trạng thái (nếu có chọn trạng thái)
-    if ($searchStatus !== "") {
-        $sql .= " AND o.status = ?";
-        $params[] = $searchStatus;
-        $types .= "i";
-    }
-
-    $sql .= " ORDER BY o.id DESC";
-
-    // Chuẩn bị và thực thi câu lệnh với Prepared Statement để bảo mật
-    $stmt = $conn->prepare($sql);
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
-    }
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    while ($row = $result->fetch_assoc()) {
-        $orders[] = $row;
-    }
+    $orders = $orderDAO->getPage($limit, $offset, $keyword, $searchStatus);
 } catch (Exception $e) {
     $error = "Lỗi tải dữ liệu: " . $e->getMessage();
 }
@@ -120,39 +99,28 @@ ob_start();
         </div>
     <?php endif; ?>
 
-  <!-- search -->
+    <!-- FORM TÌM KIẾM VÀ BỘ LỌC -->
     <div class="card mb-4">
-       
+        <div class="card-header"><i class="fas fa-search me-1"></i> Tìm kiếm & Lọc đơn hàng</div>
         <div class="card-body">
             <form method="GET" class="row g-3">
-                <!-- Tìm kiếm theo Mã đơn hàng hoặc Tên khách hàng -->
-                <div class="col-md-5">
-                    <label class="form-label fw-bold">Từ khóa tìm kiếm:</label>
-                    <input type="text" name="keyword" class="form-control" placeholder="Nhập mã đơn hàng hoặc tên khách hàng..." 
-                           value="<?= htmlspecialchars($keyword) ?>">
-                </div>
+                <!-- Giữ giá trị limit hiện tại khi tìm kiếm -->
+                <input type="hidden" name="limit" value="<?= $limit ?>">
 
-                <!-- Tìm kiếm theo Trạng thái -->
+                <div class="col-md-5">
+                    <input type="text" name="keyword" class="form-control" placeholder="Mã đơn hàng hoặc tên khách hàng..." value="<?= htmlspecialchars($keyword) ?>">
+                </div>
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Trạng thái:</label>
                     <select name="search_status" class="form-select">
                         <option value="">-- Tất cả trạng thái --</option>
                         <?php foreach ($statusList as $key => $value): ?>
-                            <option value="<?= $key ?>" <?= ($searchStatus !== "" && $searchStatus == $key) ? 'selected' : '' ?>>
-                                <?= $value['label'] ?>
-                            </option>
+                            <option value="<?= $key ?>" <?= ($searchStatus !== "" && $searchStatus == $key) ? 'selected' : '' ?>><?= $value['label'] ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-
-                <!-- Nút thao tác -->
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
-                        <i class="fas fa-search"></i> Tìm kiếm
-                    </button>
-                    <a href="index.php" class="btn btn-secondary">
-                        <i class="fas fa-redo"></i> Làm mới
-                    </a>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary me-2"><i class="fas fa-search"></i> Tìm</button>
+                    <a href="index.php" class="btn btn-secondary"><i class="fas fa-redo"></i> Làm mới</a>
                 </div>
             </form>
         </div>
@@ -180,13 +148,14 @@ ob_start();
                     </thead>
                     <tbody>
                         <?php if (!empty($orders)): ?>
-                            <?php $stt = 1; ?>
+                            <?php $stt = $offset + 1; ?>
                             <?php foreach ($orders as $od): ?>
                                 <tr>
                                     <td><?= $stt++ ?></td>
                                     <td class="fw-bold text-primary"><?= htmlspecialchars($od['order_code']) ?></td>
                                     <td class="text-start">
-                                        <?= htmlspecialchars($od['customer_name'] ?? 'Khách lẻ / Khách vãng lai') ?></td>
+                                        <?= htmlspecialchars($od['customer_name'] ?? 'Khách lẻ / Khách vãng lai') ?>
+                                    </td>
                                     <td class="text-start"><?= htmlspecialchars($od['user_name'] ?? 'Chưa phân công') ?></td>
                                     <td><?= $od['created_at'] ?></td>
                                     <td><span class="text-danger fw-bold"><?= number_format($od['total_amount'], 0, ',', '.') ?> đ</span></td>
@@ -245,7 +214,6 @@ ob_start();
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <!-- Hiển thị thông báo khi không tìm thấy dữ liệu -->
                             <tr>
                                 <td colspan="8" class="text-center text-danger fw-bold py-4">Không tìm thấy dữ liệu.</td>
                             </tr>
@@ -253,6 +221,50 @@ ob_start();
                     </tbody>
                 </table>
             </div>
+
+            <!-- THANH PHÂN TRANG VÀ CHỌN SỐ LƯỢNG HIỂN THỊ -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="d-flex align-items-center">
+                    <label class="me-2">Hiển thị:</label>
+                    <form method="GET">
+                        <?php if (!empty($keyword)): ?>
+                            <input type="hidden" name="keyword" value="<?= htmlspecialchars($keyword) ?>">
+                        <?php endif; ?>
+                        <?php if ($searchStatus !== ""): ?>
+                            <input type="hidden" name="search_status" value="<?= $searchStatus ?>">
+                        <?php endif; ?>
+                        <select name="limit" class="form-select" onchange="this.form.submit()">
+                            <option value="10" <?= $limit == 10 ? 'selected' : '' ?>>10</option>
+                            <option value="20" <?= $limit == 20 ? 'selected' : '' ?>>20</option>
+                            <option value="30" <?= $limit == 30 ? 'selected' : '' ?>>30</option>
+                        </select>
+                    </form>
+                </div>
+
+                <!-- Thanh phân trang (Pagination) -->
+                <?php if ($totalPages > 1): ?>
+                    <nav class="mb-0">
+                        <ul class="pagination mb-0">
+                            <!-- Nút Trước -->
+                            <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                                <a class="page-link" href="?limit=<?= $limit ?>&page=<?= $page - 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Trước</a>
+                            </li>
+                            
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                                    <a class="page-link" href="?limit=<?= $limit ?>&page=<?= $i ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>"><?= $i ?></a>
+                                </li>
+                            <?php endfor; ?>
+                            
+                            <!-- Nút Sau -->
+                            <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                                <a class="page-link" href="?limit=<?= $limit ?>&page=<?= $page + 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Sau</a>
+                            </li>
+                        </ul>
+                    </nav>
+                <?php endif; ?>
+            </div>
+
         </div>
     </div>
 </div>

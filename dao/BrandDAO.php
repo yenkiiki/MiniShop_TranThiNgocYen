@@ -122,4 +122,90 @@ class BrandDAO extends BaseDAO
         }
         return 0;
     }
+    public function count(string $tableName = "brands", string $column = "brandname", string $keyword = "", $status = ""): int
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM {$tableName} WHERE 1=1";
+            $params = [];
+            $types = "";
+
+            if (!empty($keyword)) {
+                $sql .= " AND ({$column} LIKE ? OR slug LIKE ?)";
+                $searchTerm = "%" . $keyword . "%";
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "ss";
+            }
+
+            if ($status !== "") {
+                $sql .= " AND status = ?";
+                $params[] = (int)$status;
+                $types .= "i";
+            }
+
+            $stmt = $this->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($types, ...$params);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                return (int)$row["total"];
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return 0;
+    }
+
+    // Lấy danh sách phân trang kết hợp tìm kiếm và lọc trạng thái
+    public function getPage(int $limit, int $offset, string $keyword = "", $status = ""): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT id, brandname, slug, image, description, status, created_at, updated_at FROM brands WHERE 1=1";
+            $params = [];
+            $types = "";
+
+            if (!empty($keyword)) {
+                $sql .= " AND (brandname LIKE ? OR slug LIKE ?)";
+                $searchTerm = "%" . $keyword . "%";
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "ss";
+            }
+
+            if ($status !== "") {
+                $sql .= " AND status = ?";
+                $params[] = (int)$status;
+                $types .= "i";
+            }
+
+            $sql .= " ORDER BY brandname ASC LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+            $types .= "ii";
+
+            $stmt = $this->prepare($sql);
+            $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $brand = new Brand();
+                $brand->id = (int)$row["id"];
+                $brand->brandName = $row["brandname"];
+                $brand->slug = $row["slug"];
+                $brand->image = $row["image"];
+                $brand->description = $row["description"];
+                $brand->status = (int)$row["status"];
+                $brand->createdAt = $row["created_at"];
+                $brand->updatedAt = $row["updated_at"];
+                $list[] = $brand;
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return $list;
+    }
 }

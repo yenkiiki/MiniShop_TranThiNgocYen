@@ -144,4 +144,65 @@ class CategoryDAO extends BaseDAO
         }
         return 0;
     }
+    public function count(string $keyword = ""): int
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM categories";
+            if (!empty($keyword)) {
+                $sql .= " WHERE catename LIKE ? OR slug LIKE ?";
+                $stmt = $this->prepare($sql);
+                $searchTerm = "%" . $keyword . "%";
+                $stmt->bind_param("ss", $searchTerm, $searchTerm);
+                $stmt->execute();
+                $result = $stmt->get_result();
+            } else {
+                $result = $this->executeQuery($sql);
+            }
+            if ($row = $result->fetch_assoc()) {
+                return (int)$row["total"];
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return 0;
+    }
+
+    // Lấy danh sách danh mục phân trang và tìm kiếm
+    public function getPage(int $limit, int $offset, string $keyword = ""): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT id, catename, slug, image, description, status, created_at, updated_at FROM categories";
+            if (!empty($keyword)) {
+                $sql .= " WHERE catename LIKE ? OR slug LIKE ?";
+            }
+            $sql .= " ORDER BY catename LIMIT ? OFFSET ?";
+
+            $stmt = $this->prepare($sql);
+            if (!empty($keyword)) {
+                $searchTerm = "%" . $keyword . "%";
+                $stmt->bind_param("ssii", $searchTerm, $searchTerm, $limit, $offset);
+            } else {
+                $stmt->bind_param("ii", $limit, $offset);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $category = new Category();
+                $category->id = (int)$row["id"];
+                $category->cateName = $row["catename"];
+                $category->slug = $row["slug"];
+                $category->image = $row["image"];
+                $category->description = $row["description"];
+                $category->status = (int)$row["status"];
+                $category->createdAt = $row["created_at"];
+                $category->updatedAt = $row["updated_at"];
+                $list[] = $category;
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return $list;
+    }
 }

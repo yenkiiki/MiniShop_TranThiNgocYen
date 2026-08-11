@@ -212,4 +212,89 @@ class OrderDAO extends BaseDAO
             throw $e;
         }
     }
+   public function countSearch(string $keyword, $status): int
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM orders o 
+                    LEFT JOIN customers c ON o.customer_id = c.id 
+                    WHERE 1=1";
+            $params = [];
+            $types = "";
+
+            if (!empty($keyword)) {
+                $sql .= " AND (o.order_code LIKE ? OR c.fullname LIKE ?)";
+                $searchTerm = "%" . $keyword . "%";
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "ss";
+            }
+
+            if ($status !== "") {
+                $sql .= " AND o.status = ?";
+                $params[] = $status;
+                $types .= "i";
+            }
+
+            $stmt = $this->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($types, ...$params);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                return (int)$row["total"];
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return 0;
+    }
+
+    // Lấy dữ liệu phân trang đơn hàng (có hỗ trợ tìm kiếm)
+    public function getPage(int $limit, int $offset, string $keyword, $status): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT o.*, c.fullname as customer_name, u.fullname as user_name 
+                    FROM orders o 
+                    LEFT JOIN customers c ON o.customer_id = c.id 
+                    LEFT JOIN users u ON o.user_id = u.id 
+                    WHERE 1=1";
+            
+            $params = [];
+            $types = "";
+
+            if (!empty($keyword)) {
+                $sql .= " AND (o.order_code LIKE ? OR c.fullname LIKE ?)";
+                $searchTerm = "%" . $keyword . "%";
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "ss";
+            }
+
+            if ($status !== "") {
+                $sql .= " AND o.status = ?";
+                $params[] = $status;
+                $types .= "i";
+            }
+
+            $sql .= " ORDER BY o.id DESC LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+            $types .= "ii";
+
+            $stmt = $this->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($types, ...$params);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
+            while ($row = $result->fetch_assoc()) {
+                $list[] = $row;
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return $list;
+    }
 }

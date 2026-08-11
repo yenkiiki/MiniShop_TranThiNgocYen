@@ -126,4 +126,93 @@ class CustomerDAO extends BaseDAO
         }
         return 0;
     }
+    public function count(string $keyword = "", $status = ""): int
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM customers WHERE 1=1";
+            $params = [];
+            $types = "";
+
+            if (!empty($keyword)) {
+                $sql .= " AND (fullname LIKE ? OR phone LIKE ? OR email LIKE ?)";
+                $searchTerm = "%" . $keyword . "%";
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "sss";
+            }
+
+            if ($status !== "") {
+                $sql .= " AND status = ?";
+                $params[] = (int)$status;
+                $types .= "i";
+            }
+
+            $stmt = $this->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($types, ...$params);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                return (int)$row["total"];
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return 0;
+    }
+
+    // Lấy danh sách khách hàng phân trang kết hợp tìm kiếm và lọc trạng thái
+    public function getPage(int $limit, int $offset, string $keyword = "", $status = ""): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT id, fullname, phone, email, address, note, status, created_at, updated_at FROM customers WHERE 1=1";
+            $params = [];
+            $types = "";
+
+            if (!empty($keyword)) {
+                $sql .= " AND (fullname LIKE ? OR phone LIKE ? OR email LIKE ?)";
+                $searchTerm = "%" . $keyword . "%";
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "sss";
+            }
+
+            if ($status !== "") {
+                $sql .= " AND status = ?";
+                $params[] = (int)$status;
+                $types .= "i";
+            }
+
+            $sql .= " ORDER BY id DESC LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+            $types .= "ii";
+
+            $stmt = $this->prepare($sql);
+            $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $customer = new Customer();
+                $customer->id = (int)$row["id"];
+                $customer->fullName = $row["fullname"];
+                $customer->phone = $row["phone"];
+                $customer->email = $row["email"];
+                $customer->address = $row["address"];
+                $customer->note = $row["note"];
+                $customer->status = (int)$row["status"];
+                $customer->createdAt = $row["created_at"];
+                $customer->updatedAt = $row["updated_at"];
+                $list[] = $customer;
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return $list;
+    }
 }
