@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $brandName), '-'));
         }
 
-        // Xử lý upload hình ảnh
+        // Xử lý upload hình ảnh (Cần form có enctype="multipart/form-data")
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $fileTmpPath = $_FILES['image']['tmp_name'];
             $fileName = $_FILES['image']['name'];
@@ -109,6 +109,7 @@ ob_start();
         </div>
         <div class="card-body">
             <form action="" method="POST" enctype="multipart/form-data">
+                
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Tên thương hiệu <span class="text-danger">*</span>:</label>
@@ -124,8 +125,13 @@ ob_start();
 
                 <div class="row mb-3">
                     <div class="col-md-6">
+                        <!-- Khung Preview Ảnh / Logo -->
+                        <div class="mb-3 text-center" id="preview">
+                            <span class="text-muted fst-italic d-block border rounded p-4 bg-light">Chưa chọn ảnh logo thương hiệu</span>
+                        </div>
+
                         <label class="form-label fw-bold">Hình ảnh logo:</label>
-                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*">
                         <div class="form-text">Chọn file ảnh định dạng jpg, jpeg, png, gif, webp.</div>
                     </div>
                     <div class="col-md-6">
@@ -150,6 +156,7 @@ ob_start();
                         <i class="fas fa-arrow-left"></i> Quay lại
                     </a>
                 </div>
+
             </form>
         </div>
     </div>

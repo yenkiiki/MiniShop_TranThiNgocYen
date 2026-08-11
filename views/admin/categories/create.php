@@ -14,8 +14,8 @@ $cateName = "";
 $slug = "";
 $description = "";
 $status = 1;
+$imageName = null;
 $errors = [];
-$successMessage = "";
 
 // Đọc dữ liệu từ các điều khiển trên Form bằng phương thức POST
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -37,7 +37,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Slug không được vượt quá 255 ký tự.";
     }
 
-    // Nếu Validation thành công, tiếp tục xử lý và lưu dữ liệu vào cơ sở dữ liệu
+    // XỬ LÝ UPLOAD HÌNH ẢNH
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $fileTmpPath = $_FILES['image']['tmp_name'];
+        $fileName = $_FILES['image']['name'];
+        $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        
+        // Các định dạng ảnh cho phép
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        if (in_array($fileExtension, $allowedExtensions)) {
+            // Đặt lại tên file độc đáo để tránh trùng lặp trên server
+            $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
+            
+            // Đường dẫn thư mục lưu trữ ảnh danh mục
+            $uploadFileDir = __DIR__ . "/../../../uploads/categories/";
+            
+            // Tự động tạo thư mục nếu chưa tồn tại
+            if (!is_dir($uploadFileDir)) {
+                mkdir($uploadFileDir, 0755, true);
+            }
+            
+            $dest_path = $uploadFileDir . $newFileName;
+            
+            if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                $imageName = $newFileName;
+            } else {
+                $errors[] = "Đã xảy ra lỗi khi lưu file hình ảnh lên server.";
+            }
+        } else {
+            $errors[] = "Chỉ chấp nhận các định dạng ảnh hợp lệ: " . implode(', ', $allowedExtensions);
+        }
+    }
+
+    // Nếu Validation thành công, tiếp tục lưu dữ liệu vào cơ sở dữ liệu
     if (empty($errors)) {
         try {
             $category = new Category();
@@ -45,17 +78,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $category->slug = $slug;
             $category->description = $description;
             $category->status = $status;
-            $category->image = null; // Hoặc xử lý upload ảnh nếu có
+            $category->image = $imageName; // Gán tên file ảnh vào model
 
             // Gọi phương thức insert() trong CategoryDAO để lưu dữ liệu
             $result = $categoryDAO->insert($category);
 
             if ($result) {
-                // Sau khi thêm thành công, chuyển về trang index.php
+                // Sau khi thêm thành công, chuyển hướng về trang index.php
                 header("Location: index.php");
                 exit();
             } else {
-                // Nếu thêm thất bại, hiển thị thông báo lỗi phù hợp
                 $errors[] = "Thêm danh mục thất bại. Vui lòng thử lại.";
             }
         } catch (Exception $e) {
@@ -102,8 +134,8 @@ ob_start();
                 </div>
             <?php endif; ?>
 
-            <!-- Form thêm mới danh mục sử dụng phương thức POST -->
-            <form action="" method="POST">
+            <!-- Form thêm mới danh mục (Bắt buộc có enctype="multipart/form-data" để upload file) -->
+            <form action="" method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label for="cateName" class="form-label fw-bold">Tên danh mục <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="cateName" name="cateName" value="<?= htmlspecialchars($cateName) ?>" placeholder="Nhập tên danh mục...">
@@ -112,6 +144,13 @@ ob_start();
                 <div class="mb-3">
                     <label for="slug" class="form-label fw-bold">Slug <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="slug" name="slug" value="<?= htmlspecialchars($slug) ?>" placeholder="nhap-ten-danh-muc">
+                </div>
+
+                <!-- Bổ sung trường chọn ảnh danh mục -->
+                <div class="mb-3">
+                    <label for="image" class="form-label fw-bold">Hình ảnh danh mục</label>
+                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                    <div class="form-text">Hỗ trợ các định dạng: jpg, jpeg, png, gif, webp.</div>
                 </div>
 
                 <div class="mb-3">

@@ -1,5 +1,5 @@
 <?php
-// Bật hiển thị lỗi để debug
+// Bật hiển thị lỗi để dễ debug
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -44,6 +44,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Slug không được vượt quá 255 ký tự.";
     }
 
+    // Xử lý upload hình ảnh mới (nếu có chọn)
+    $imageName = $category->image; // Giữ lại ảnh cũ mặc định
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $fileTmpPath = $_FILES['image']['tmp_name'];
+        $fileName = $_FILES['image']['name'];
+        $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        
+        // Chỉ cho phép các định dạng ảnh phổ biến
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        if (in_array($fileExtension, $allowedExtensions)) {
+            // Tạo tên file mới độc lập tránh trùng lặp
+            $newFileName = time() . '_' . uniqid() . '.' . $fileExtension;
+            $uploadFileDir = __DIR__ . '/../../../uploads/categories/';
+            
+            // Tạo thư mục nếu chưa tồn tại
+            if (!is_dir($uploadFileDir)) {
+                mkdir($uploadFileDir, 0755, true);
+            }
+            
+            $dest_path = $uploadFileDir . $newFileName;
+            
+            if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                // Nếu upload thành công, gán tên ảnh mới
+                $imageName = $newFileName;
+                
+                // Xóa ảnh cũ trên server nếu tồn tại
+                if (!empty($category->image)) {
+                    $oldImagePath = $uploadFileDir . $category->image;
+                    if (file_exists($oldImagePath)) {
+                        @unlink($oldImagePath);
+                    }
+                }
+            } else {
+                $errors[] = "Đã xảy ra lỗi khi di chuyển file tải lên.";
+            }
+        } else {
+            $errors[] = "Định dạng ảnh không hợp lệ. Chỉ chấp nhận: jpg, jpeg, png, gif, webp.";
+        }
+    }
+
     // Nếu Validation thành công, tiến hành cập nhật dữ liệu
     if (empty($errors)) {
         try {
@@ -52,6 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $category->slug = $slug;
             $category->description = $description;
             $category->status = $status;
+            $category->image = $imageName; // Cập nhật tên ảnh mới hoặc giữ nguyên ảnh cũ
 
             // Gọi phương thức update() trong CategoryDAO để cập nhật dữ liệu
             $result = $categoryDAO->update($category);
@@ -61,7 +103,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("Location: index.php");
                 exit();
             } else {
-                // Nếu cập nhật thất bại: Hiển thị thông báo lỗi phù hợp
                 $errors[] = "Cập nhật danh mục thất bại. Vui lòng thử lại.";
             }
         } catch (Exception $e) {
@@ -107,7 +148,8 @@ ob_start();
                 </div>
             <?php endif; ?>
 
-            <form method="POST">
+            <!-- Thêm enctype="multipart/form-data" để hỗ trợ upload file -->
+            <form method="POST" enctype="multipart/form-data">
                 <!-- ID -->
                 <input type="hidden" name="categoryId" value="<?= $category->id ?>">
 
@@ -121,6 +163,23 @@ ob_start();
                 <div class="mb-3">
                     <label class="form-label fw-bold">Slug <span class="text-danger">*</span></label>
                     <input type="text" name="slug" class="form-control" value="<?= htmlspecialchars($category->slug ?? '') ?>">
+                </div>
+
+                <!-- Hình ảnh -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Hình ảnh danh mục</label>
+                    <div class="mb-2">
+                        <?php if (!empty($category->image)): ?>
+                            <img src="../../../uploads/categories/<?= htmlspecialchars($category->image) ?>" 
+                                 alt="<?= htmlspecialchars($category->cateName) ?>" 
+                                 class="img-thumbnail rounded shadow-sm" 
+                                 style="width: 80px; height: 80px; object-fit: cover;">
+                        <?php else: ?>
+                            <span class="text-muted small">Chưa có ảnh</span>
+                        <?php endif; ?>
+                    </div>
+                    <input type="file" name="image" class="form-control" accept="image/*">
+                    <div class="form-text text-muted">Chọn ảnh mới nếu bạn muốn thay thế ảnh hiện tại.</div>
                 </div>
 
                 <!-- Mô tả -->

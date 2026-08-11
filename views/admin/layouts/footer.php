@@ -5,5 +5,6 @@
     </footer>
 
     <script src="<?= BASE_URL ?>assets/bootstrap.bundle.min.js"></script>
+<script src="<?= BASE_URL ?>assets/admin/admin.js"></script>
 </body>
 </html>

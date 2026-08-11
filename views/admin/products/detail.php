@@ -16,29 +16,27 @@ if ($id <= 0) {
     exit();
 }
 
-// 2. Lấy thông tin chi tiết sản phẩm
+// 2. Lấy thông tin cơ bản của sản phẩm
 $product = $productDAO->findById($id);
 if (!$product) {
     header("Location: index.php?msg=not_found");
     exit();
 }
 
-// Lấy thêm tên danh mục và thương hiệu bằng cách gọi danh sách hoặc truy vấn riêng tùy biến, 
-// nhưng ở đây ta có thể tận dụng phương thức getAll hoặc lấy qua join nếu cần. 
-// Hoặc để đơn giản và đồng bộ, ta truy vấn thông tin bổ sung tên danh mục/thương hiệu của sản phẩm này:
-$productDetailFull = null;
+// Lấy tên danh mục và thương hiệu thông qua getAll() sẵn có mà không cần sửa DAO
+$cateName = 'Chưa phân loại';
+$brandName = 'Không có thương hiệu';
+
 $allProducts = $productDAO->getAll();
 foreach ($allProducts as $p) {
     if ($p->id === $id) {
-        $productDetailFull = $p;
+        $cateName = $p->cateName ?? 'Chưa phân loại';
+        $brandName = $p->brandName ?? 'Không có thương hiệu';
         break;
     }
 }
-// Nếu không tìm thấy qua getAll (vd phân trang sau này), fallback lại dùng đối tượng product cơ bản
-$cateName = $productDetailFull ? $productDetailFull->cateName : 'Chưa phân loại';
-$brandName = $productDetailFull ? $productDetailFull->brandName : 'Không có thương hiệu';
 
-// 3. Lấy danh sách hình ảnh phụ của sản phẩm (nếu có bảng product_images)
+// 3. Lấy danh sách hình ảnh phụ của sản phẩm từ bảng product_images
 $productImages = $productDAO->getImagesByProductId($id);
 
 // Đặt tiêu đề trang
@@ -84,14 +82,16 @@ ob_start();
                         <?php endif; ?>
                     </div>
 
-                    <!-- Hiển thị ảnh phụ nếu có -->
+                    <!-- Hiển thị ảnh phụ (Gallery) -->
                     <?php if (!empty($productImages)): ?>
                         <div class="mt-3 text-start">
-                            <h6 class="fw-bold">Hình ảnh phụ:</h6>
+                            <h6 class="fw-bold">Hình ảnh phụ (<?= count($productImages) ?>):</h6>
                             <div class="d-flex flex-wrap gap-2">
                                 <?php foreach ($productImages as $img): ?>
-                                    <img src="../../../uploads/products/<?= htmlspecialchars($img->image) ?>" 
-                                         alt="" class="rounded border" width="60" height="60" style="object-fit: cover;">
+                                    <a href="../../../uploads/products/<?= htmlspecialchars($img->image) ?>" target="_blank" title="Xem ảnh lớn">
+                                        <img src="../../../uploads/products/<?= htmlspecialchars($img->image) ?>" 
+                                             alt="" class="rounded border" width="70" height="70" style="object-fit: cover;">
+                                    </a>
                                 <?php endforeach; ?>
                             </div>
                         </div>

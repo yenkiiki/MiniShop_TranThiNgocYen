@@ -93,7 +93,7 @@ class ProductDAO extends BaseDAO
         return null;
     }
 
-    public function insert(Product $product): bool
+public function insert(Product $product): int
     {
         try {
             $sql = "INSERT INTO products(category_id, brand_id, proname, slug, price, discount_price, quantity, image, description, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -111,12 +111,14 @@ class ProductDAO extends BaseDAO
                 $product->description,
                 $product->status
             );
-            return $stmt->execute();
+            if ($stmt->execute()) {
+                return $stmt->insert_id; // Trả về ID tự tăng của sản phẩm vừa thêm
+            }
+            return 0;
         } catch (Exception $e) {
             throw $e;
         }
     }
-
     public function update(Product $product): bool
     {
         try {

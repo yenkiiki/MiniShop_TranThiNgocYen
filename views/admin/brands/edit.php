@@ -130,6 +130,7 @@ ob_start();
         </div>
         <div class="card-body">
             <form action="" method="POST" enctype="multipart/form-data">
+                
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Tên thương hiệu <span class="text-danger">*</span>:</label>
@@ -145,17 +146,21 @@ ob_start();
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Hình ảnh logo:</label>
-                        <input type="file" name="image" class="form-control mb-2" accept="image/*">
+                        <!-- Khung Preview Ảnh / Logo (Hiển thị ảnh cũ sẵn, tự thay thế khi chọn file mới) -->
+                        <div class="mb-3 text-center" id="preview">
+                            <?php if (!empty($brand->image)): ?>
+                                <div class="d-inline-block position-relative">
+                                    <img src="../../../uploads/brands/<?= htmlspecialchars($brand->image) ?>" alt="Brand Logo" class="img-thumbnail rounded shadow-sm" style="max-width: 120px; height: 120px; object-fit: cover;">
+                                    <div class="small text-muted mt-1 fw-bold">Ảnh hiện tại</div>
+                                </div>
+                            <?php else: ?>
+                                <span class="text-muted fst-italic d-block border rounded p-4 bg-light">Chưa có ảnh logo thương hiệu</span>
+                            <?php endif; ?>
+                        </div>
+
+                        <label class="form-label fw-bold">Hình ảnh logo mới:</label>
+                        <input type="file" name="image" id="image" class="form-control mb-2" accept="image/*">
                         <div class="form-text">Chọn file mới nếu muốn thay đổi ảnh logo hiện tại.</div>
-                        
-                        <!-- Hiển thị ảnh hiện tại -->
-                        <?php if (!empty($brand->image)): ?>
-                            <div class="mt-2">
-                                <span class="d-block text-muted mb-1">Ảnh hiện tại:</span>
-                                <img src="../../../uploads/brands/<?= htmlspecialchars($brand->image) ?>" alt="Brand Logo" style="width: 80px; height: 80px; object-fit: cover;" class="rounded border">
-                            </div>
-                        <?php endif; ?>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Trạng thái:</label>
@@ -180,6 +185,7 @@ ob_start();
                         <i class="fas fa-arrow-left"></i> Quay lại
                     </a>
                 </div>
+
             </form>
         </div>
     </div>

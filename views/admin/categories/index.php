@@ -13,12 +13,23 @@ $error = "";
 
 // XỬ LÝ XÓA KHI NGƯỜI DÙNG NHẤN NÚT XÓA (METHOD POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnDelete'])) {
-    $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-    
+    $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+
     if ($id > 0) {
         try {
+            // Lấy thông tin danh mục cũ để xóa file ảnh trên server nếu cần
+            $catOld = $categoryDAO->findById($id);
+
             $result = $categoryDAO->delete($id);
             if ($result) {
+                // Xóa file ảnh vật lý trên server nếu có
+                if ($catOld && !empty($catOld->image)) {
+                    $imagePath = __DIR__ . "/../../../uploads/categories/" . $catOld->image;
+                    if (file_exists($imagePath)) {
+                        @unlink($imagePath);
+                    }
+                }
+
                 header("Location: index.php?msg=delete_success");
                 exit();
             } else {
@@ -76,7 +87,8 @@ ob_start();
     <!-- FORM TÌM KIẾM CƠ BẢN -->
     <form method="GET" class="row mb-3">
         <div class="col-md-4">
-            <input type="text" name="keyword" class="form-control" placeholder="Nhập từ khóa..." value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
+            <input type="text" name="keyword" class="form-control" placeholder="Nhập từ khóa..."
+                value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
         </div>
         <div class="col-md-2">
             <button type="submit" class="btn btn-primary">
@@ -103,6 +115,7 @@ ob_start();
                     <thead>
                         <tr>
                             <th>STT</th>
+                            <th>Hình ảnh</th>
                             <th class="text-start">Tên danh mục</th>
                             <th>Slug</th>
                             <th>Trạng thái</th>
@@ -116,6 +129,16 @@ ob_start();
                             <?php foreach ($categories as $cat): ?>
                                 <tr>
                                     <td><?= $stt++ ?></td>
+                                    <td>
+                                        <?php if (!empty($cat->image)): ?>
+                                            <img src="../../../uploads/categories/<?= htmlspecialchars($cat->image) ?>"
+                                                alt="<?= htmlspecialchars($cat->cateName) ?>"
+                                                class="img-thumbnail rounded shadow-sm"
+                                                style="width: 50px; height: 50px; object-fit: cover;">
+                                        <?php else: ?>
+                                            <span class="badge bg-light text-dark border p-2">Không có</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td class="text-start fw-bold"><?= htmlspecialchars($cat->cateName) ?></td>
                                     <td><code><?= htmlspecialchars($cat->slug ?? '') ?></code></td>
                                     <td>
@@ -128,15 +151,19 @@ ob_start();
                                     <td><?= $cat->createdAt ?></td>
                                     <td class="text-nowrap">
                                         <div class="d-inline-flex align-items-center gap-1">
-                                            <a href="detail.php?id=<?= $cat->id ?>" class="btn btn-info text-white px-3 py-2" title="Chi tiết">
+                                            <a href="detail.php?id=<?= $cat->id ?>" class="btn btn-info text-white px-3 py-2"
+                                                title="Chi tiết">
                                                 <i class="fas fa-eye"></i> Xem
                                             </a>
-                                            <a href="edit.php?id=<?= $cat->id ?>" class="btn btn-warning text-white px-3 py-2" title="Sửa">
+                                            <a href="edit.php?id=<?= $cat->id ?>" class="btn btn-warning text-white px-3 py-2"
+                                                title="Sửa">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>
-                                            <form method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa?');" style="display:inline-block; margin: 0;">
+                                            <form method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa?');"
+                                                style="display:inline-block; margin: 0;">
                                                 <input type="hidden" name="id" value="<?= $cat->id ?>">
-                                                <button type="submit" name="btnDelete" class="btn btn-danger px-3 py-2" title="Xóa">
+                                                <button type="submit" name="btnDelete" class="btn btn-danger px-3 py-2"
+                                                    title="Xóa">
                                                     <i class="fas fa-trash"></i> Xóa
                                                 </button>
                                             </form>
@@ -146,7 +173,7 @@ ob_start();
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-3">Không tìm thấy dữ liệu.</td>
+                                <td colspan="7" class="text-center text-muted py-3">Không tìm thấy dữ liệu.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
