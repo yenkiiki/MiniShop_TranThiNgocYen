@@ -31,8 +31,14 @@ if (isset($_GET['msg']) && $_GET['msg'] === 'delete_success') {
     $message = "Xóa sản phẩm thành công!";
 }
 
-// --- Cấu hình thông số phân trang ---
-$limit = 10;
+$keyword = isset($_GET["keyword"]) ? trim($_GET["keyword"]) : "";
+
+// --- Cấu hình thông số phân trang & Limit ---
+$limit = isset($_GET["limit"]) ? (int)$_GET["limit"] : 10;
+if (!in_array($limit, [10, 20, 30])) {
+    $limit = 10;
+}
+
 $page = (int)($_GET["page"] ?? 1);
 if ($page < 1) $page = 1;
 $offset = ($page - 1) * $limit;
@@ -68,6 +74,20 @@ ob_start();
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
+
+    <form method="GET" class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" name="keyword" class="form-control" placeholder="Nhập từ khóa sản phẩm..."
+                value="<?= htmlspecialchars($keyword) ?>">
+        </div>
+        <!-- Giữ lại giá trị limit khi tìm kiếm -->
+        <input type="hidden" name="limit" value="<?= $limit ?>">
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Tìm kiếm
+            </button>
+        </div>
+    </form>
 
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -147,26 +167,43 @@ ob_start();
                 </table>
             </div>
 
-            <!-- Thanh phân trang (Pagination) -->
-            <?php if ($totalPages > 1): ?>
-                <nav class="d-flex justify-content-center mt-4">
-                    <ul class="pagination">
-                        <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $page - 1 ?>">Trước</a>
-                        </li>
-                        
-                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                            <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+            <!-- Khu vực chứa Select chọn số lượng hiển thị và Thanh phân trang -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="d-flex align-items-center">
+                    <label class="me-2">Hiển thị:</label>
+                    <form method="GET">
+                        <?php if (!empty($keyword)): ?>
+                            <input type="hidden" name="keyword" value="<?= htmlspecialchars($keyword) ?>">
+                        <?php endif; ?>
+                        <select name="limit" class="form-select" onchange="this.form.submit()">
+                            <option value="10" <?= $limit == 10 ? 'selected' : '' ?>>10</option>
+                            <option value="20" <?= $limit == 20 ? 'selected' : '' ?>>20</option>
+                            <option value="30" <?= $limit == 30 ? 'selected' : '' ?>>30</option>
+                        </select>
+                    </form>
+                </div>
+
+                <!-- Thanh phân trang (Pagination) -->
+                <?php if ($totalPages > 1): ?>
+                    <nav class="mb-0">
+                        <ul class="pagination mb-0">
+                            <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                                <a class="page-link" href="?page=<?= $page - 1 ?>&limit=<?= $limit ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?>">Trước</a>
                             </li>
-                        <?php endfor; ?>
-                        
-                        <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $page + 1 ?>">Sau</a>
-                        </li>
-                    </ul>
-                </nav>
-            <?php endif; ?>
+                            
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                                    <a class="page-link" href="?page=<?= $i ?>&limit=<?= $limit ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?>"><?= $i ?></a>
+                                </li>
+                            <?php endfor; ?>
+                            
+                            <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                                <a class="page-link" href="?page=<?= $page + 1 ?>&limit=<?= $limit ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?>">Sau</a>
+                            </li>
+                        </ul>
+                    </nav>
+                <?php endif; ?>
+            </div>
 
         </div>
     </div>
