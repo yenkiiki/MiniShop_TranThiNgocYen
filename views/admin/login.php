@@ -1,17 +1,6 @@
 <?php
-// Xử lý đăng xuất trực tiếp ngay tại file login.php nếu có tham số action=logout
-if (isset($_GET['action']) && $_GET['action'] == 'logout') {
-    session_start();
-    session_unset();
-    session_destroy();
-    header("Location: login.php");
-    exit();
-}
-
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+var_dump($_SESSION);
 require_once __DIR__ . "/../../config/Database.php";
 require_once __DIR__ . "/../../models/User.php";
 require_once __DIR__ . "/../../dao/UserDAO.php";
@@ -44,11 +33,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } elseif ($user->status == 0) {
                 $errors["username"] = "Tài khoản của bạn đã bị khóa!";
             } else {
-                // Đăng nhập thành công, lưu thông tin vào Session
-                $_SESSION["user_id"] = $user->id;
-                $_SESSION["username"] = $user->userName;
-                $_SESSION["fullname"] = $user->fullName;
-                $_SESSION["role"] = $user->role;
+                // Đăng nhập thành công, lưu User vào Session theo yêu cầu của cô
+                $_SESSION["user"] = $user;
 
                 // Chuyển hướng vào trang Dashboard quản trị
                 header("Location: dashboard.php");
@@ -85,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <?php endif; ?>
 
                     <form action="login.php" method="POST" novalidate>
-                        <!-- Tên đăng nhập (Đã thêm required để cô test xóa trên DevTools) -->
+                        <!-- Tên đăng nhập -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tên đăng nhập</label>
                             <input type="text" 
@@ -101,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             <?php endif; ?>
                         </div>
 
-                        <!-- Mật khẩu (Đã thêm required để cô test xóa trên DevTools) -->
+                        <!-- Mật khẩu -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">Mật khẩu</label>
                             <input type="password" 
