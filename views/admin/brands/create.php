@@ -3,10 +3,18 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Gọi các DAO và Model cần thiết
+// Gọi các Model User trước tiên để tránh lỗi session unserialize
+require_once __DIR__ . "/../../../models/User.php";
 require_once __DIR__ . "/../../../config/Database.php";
 require_once __DIR__ . "/../../../models/Brand.php";
 require_once __DIR__ . "/../../../dao/BrandDAO.php";
+require_once __DIR__ . "/../../../middleware/CsrfMiddleware.php";
+
+// Khởi động session an toàn và sinh token ngay từ đầu trang
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+CsrfMiddleware::generateToken();
 
 $brandDAO = new BrandDAO();
 $error = "";
@@ -14,6 +22,9 @@ $success = "";
 
 // XỬ LÝ KHI SUBMIT FORM THÊM MỚI (METHOD POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 1. Xác thực CSRF Token trước khi xử lý dữ liệu
+    CsrfMiddleware::verify();
+
     $brandName = isset($_POST['brandname']) ? trim($_POST['brandname']) : '';
     $slug = isset($_POST['slug']) ? trim($_POST['slug']) : '';
     $description = isset($_POST['description']) ? trim($_POST['description']) : '';
@@ -29,21 +40,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $brandName), '-'));
         }
 
-        // Xử lý upload hình ảnh (Cần form có enctype="multipart/form-data")
+        // Xử lý upload hình ảnh
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $fileTmpPath = $_FILES['image']['tmp_name'];
             $fileName = $_FILES['image']['name'];
             $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             
-            // Các định dạng ảnh cho phép
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             
             if (in_array($fileExtension, $allowedExtensions)) {
-                // Tạo tên file mới độc đáo để tránh trùng lặp
                 $imageName = time() . '_' . uniqid() . '.' . $fileExtension;
                 $uploadFileDir = __DIR__ . '/../../../uploads/brands/';
                 
-                // Kiểm tra và tạo thư mục nếu chưa tồn tại
                 if (!is_dir($uploadFileDir)) {
                     mkdir($uploadFileDir, 0755, true);
                 }
@@ -57,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Nếu không có lỗi, tiến hành lưu vào cơ sở dữ liệu thông qua BrandDAO
+        // Nếu không có lỗi, tiến hành lưu vào cơ sở dữ liệu
         if (empty($error)) {
             try {
                 $brand = new Brand();
@@ -94,7 +102,6 @@ ob_start();
         <li class="breadcrumb-item active">Thêm mới</li>
     </ol>
 
-    <!-- HIỂN THỊ LỖI NẾU CÓ -->
     <?php if (!empty($error)): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <?= $error ?>
@@ -102,7 +109,6 @@ ob_start();
         </div>
     <?php endif; ?>
 
-    <!-- FORM THÊM MỚI THƯƠNG HIỆU -->
     <div class="card mb-4">
         <div class="card-header">
             <i class="fas fa-plus-circle me-1"></i> Form thêm mới thương hiệu
@@ -110,6 +116,9 @@ ob_start();
         <div class="card-body">
             <form action="" method="POST" enctype="multipart/form-data">
                 
+                <!-- Thêm CSRF Token bảo vệ form -->
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION["csrf_token"] ?? '') ?>">
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Tên thương hiệu <span class="text-danger">*</span>:</label>
@@ -125,11 +134,9 @@ ob_start();
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <!-- Khung Preview Ảnh / Logo -->
                         <div class="mb-3 text-center" id="preview">
                             <span class="text-muted fst-italic d-block border rounded p-4 bg-light">Chưa chọn ảnh logo thương hiệu</span>
                         </div>
-
                         <label class="form-label fw-bold">Hình ảnh logo:</label>
                         <input type="file" name="image" id="image" class="form-control" accept="image/*">
                         <div class="form-text">Chọn file ảnh định dạng jpg, jpeg, png, gif, webp.</div>

@@ -1,5 +1,12 @@
 <?php
+require_once __DIR__ . '/../../../models/User.php';
+
 $user = $_SESSION["user"] ?? null;
+
+// Chỉ giữ lại nếu nó thực sự là một đối tượng User hợp lệ
+if (!($user instanceof User)) {
+    $user = null;
+}
 ?>
 <div class="container-fluid d-flex justify-content-between align-items-center bg-white shadow-sm py-2 px-4">
     <div class="d-flex align-items-center">

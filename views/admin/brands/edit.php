@@ -3,10 +3,18 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Gọi các DAO và Model cần thiết
+// Gọi các Model User và Middleware bảo mật trước tiên để tránh lỗi session
+require_once __DIR__ . "/../../../models/User.php";
 require_once __DIR__ . "/../../../config/Database.php";
 require_once __DIR__ . "/../../../models/Brand.php";
 require_once __DIR__ . "/../../../dao/BrandDAO.php";
+require_once __DIR__ . "/../../../middleware/CsrfMiddleware.php";
+
+// Khởi động session an toàn và sinh token ngay từ đầu trang
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+CsrfMiddleware::generateToken();
 
 $brandDAO = new BrandDAO();
 $error = "";
@@ -27,6 +35,9 @@ if (!$brand) {
 
 // XỬ LÝ KHI SUBMIT FORM CẬP NHẬT (METHOD POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 1. Xác thực CSRF Token trước khi xử lý dữ liệu
+    CsrfMiddleware::verify();
+
     $brandName = isset($_POST['brandname']) ? trim($_POST['brandname']) : '';
     $slug = isset($_POST['slug']) ? trim($_POST['slug']) : '';
     $description = isset($_POST['description']) ? trim($_POST['description']) : '';
@@ -131,6 +142,9 @@ ob_start();
         <div class="card-body">
             <form action="" method="POST" enctype="multipart/form-data">
                 
+                <!-- Thêm CSRF Token bảo vệ form sửa -->
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION["csrf_token"] ?? '') ?>">
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Tên thương hiệu <span class="text-danger">*</span>:</label>
@@ -146,7 +160,7 @@ ob_start();
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <!-- Khung Preview Ảnh / Logo (Hiển thị ảnh cũ sẵn, tự thay thế khi chọn file mới) -->
+                        <!-- Khung Preview Ảnh / Logo -->
                         <div class="mb-3 text-center" id="preview">
                             <?php if (!empty($brand->image)): ?>
                                 <div class="d-inline-block position-relative">

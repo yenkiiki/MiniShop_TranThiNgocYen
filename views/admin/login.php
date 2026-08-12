@@ -3,14 +3,19 @@ require_once __DIR__ . "/../../config/Database.php";
 require_once __DIR__ . "/../../models/User.php";
 require_once __DIR__ . "/../../dao/UserDAO.php";
 require_once __DIR__ . "/../../middleware/GuestMiddleware.php";
+require_once __DIR__ . "/../../middleware/CsrfMiddleware.php";
 
 session_start();
 GuestMiddleware::handle();
+CsrfMiddleware::generateToken();
 
 $errors = [];
 $username = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    
+    CsrfMiddleware::verify();
+
     $username = trim($_POST["username"] ?? "");
     $password = $_POST["password"] ?? "";
 
@@ -68,6 +73,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <?php endif; ?>
 
                     <form action="login.php" method="POST" novalidate>
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION["csrf_token"] ?>">
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tên đăng nhập</label>
                             <input type="text" 
@@ -108,7 +115,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </form>
                 </div>
             </div>
-
+            <div class="text-center mt-3 text-muted small">
+                &copy; Mini Shop Management System
+            </div>
         </div>
     </div>
 </div>
