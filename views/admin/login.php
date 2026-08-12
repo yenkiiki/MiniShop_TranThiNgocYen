@@ -1,6 +1,6 @@
 <?php
 session_start();
-var_dump($_SESSION);
+// var_dump($_SESSION);
 require_once __DIR__ . "/../../config/Database.php";
 require_once __DIR__ . "/../../models/User.php";
 require_once __DIR__ . "/../../dao/UserDAO.php";
@@ -37,8 +37,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION["user"] = $user;
 
                 // Chuyển hướng vào trang Dashboard quản trị
-                header("Location: dashboard.php");
-                exit();
+              header("Location: /MINISHOP_TRANTHINGOCYEN/views/admin/dashboard.php");
+exit();
             }
         } catch (Exception $e) {
             $errors["system"] = "Lỗi hệ thống: " . $e->getMessage();
