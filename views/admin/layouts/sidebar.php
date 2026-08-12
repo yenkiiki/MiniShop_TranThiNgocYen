@@ -1,6 +1,7 @@
 <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse py-3 border-end">
     <div class="position-sticky">
-        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mb-3 text-muted text-uppercase">
+        <h6
+            class="sidebar-heading d-flex justify-content-between align-items-center px-3 mb-3 text-muted text-uppercase">
             <span>Danh mục quản lý</span>
         </h6>
         <ul class="nav flex-column">
@@ -39,6 +40,7 @@
                     🛒 Quản lý Đơn hàng
                 </a>
             </li>
+
         </ul>
 
         <hr class="my-3">
@@ -47,6 +49,12 @@
             <li class="nav-item">
                 <a class="nav-link text-danger" href="<?= BASE_URL ?>index.php" target="_blank">
                     🌐 Xem trang chủ Client
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-danger fw-bold" href="<?= BASE_URL ?>views/admin/login.php?action=logout"
+                    onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?');">
+                    🚪 Đăng xuất
                 </a>
             </li>
         </ul>
