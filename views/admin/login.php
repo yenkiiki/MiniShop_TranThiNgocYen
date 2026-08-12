@@ -1,9 +1,11 @@
 <?php
-session_start();
-// var_dump($_SESSION);
 require_once __DIR__ . "/../../config/Database.php";
 require_once __DIR__ . "/../../models/User.php";
 require_once __DIR__ . "/../../dao/UserDAO.php";
+require_once __DIR__ . "/../../middleware/GuestMiddleware.php";
+
+session_start();
+GuestMiddleware::handle();
 
 $errors = [];
 $username = "";
@@ -12,7 +14,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = trim($_POST["username"] ?? "");
     $password = $_POST["password"] ?? "";
 
-    // Validate dữ liệu trống ở Server
     if ($username === "") {
         $errors["username"] = "Vui lòng nhập tên đăng nhập.";
     }
@@ -20,7 +21,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors["password"] = "Vui lòng nhập mật khẩu.";
     }
 
-    // Nếu không có lỗi cơ bản thì kiểm tra thông tin trong CSDL
     if (empty($errors)) {
         try {
             $userDAO = new UserDAO();
@@ -33,12 +33,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } elseif ($user->status == 0) {
                 $errors["username"] = "Tài khoản của bạn đã bị khóa!";
             } else {
-                // Đăng nhập thành công, lưu User vào Session theo yêu cầu của cô
                 $_SESSION["user"] = $user;
 
-                // Chuyển hướng vào trang Dashboard quản trị
-              header("Location: /MINISHOP_TRANTHINGOCYEN/views/admin/dashboard.php");
-exit();
+                header("Location: /MINISHOP_TRANTHINGOCYEN/views/admin/dashboard.php");
+                exit();
             }
         } catch (Exception $e) {
             $errors["system"] = "Lỗi hệ thống: " . $e->getMessage();
@@ -52,7 +50,6 @@ exit();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập hệ thống - Mini Shop</title>
-    <!-- Sử dụng Bootstrap 5 CSS -->
     <link href="<?= BASE_URL ?>assets/bootstrap.min.css" rel="stylesheet">
     <link href="<?= BASE_URL ?>assets/css/style.css" rel="stylesheet">
 </head>
@@ -71,7 +68,6 @@ exit();
                     <?php endif; ?>
 
                     <form action="login.php" method="POST" novalidate>
-                        <!-- Tên đăng nhập -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tên đăng nhập</label>
                             <input type="text" 
@@ -87,7 +83,6 @@ exit();
                             <?php endif; ?>
                         </div>
 
-                        <!-- Mật khẩu -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">Mật khẩu</label>
                             <input type="password" 
@@ -102,27 +97,21 @@ exit();
                             <?php endif; ?>
                         </div>
 
-                        <!-- Ghi nhớ đăng nhập -->
                         <div class="mb-3 form-check">
                             <input type="checkbox" name="remember" class="form-check-input" id="remember">
                             <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
                         </div>
 
-                        <!-- Nút Submit -->
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary py-2 fw-bold">Đăng nhập</button>
                         </div>
                     </form>
                 </div>
             </div>
-            <div class="text-center mt-3 text-muted small">
-                &copy; Mini Shop Management System
-            </div>
+
         </div>
     </div>
 </div>
-
-<!-- Bootstrap 5 JS Bundle -->
 <script src="<?= BASE_URL ?>assets/bootstrap.bundle.min.js"></script>
 </body>
 </html>
