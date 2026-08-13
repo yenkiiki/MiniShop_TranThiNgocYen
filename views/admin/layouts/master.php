@@ -1,5 +1,8 @@
 <?php
-// Đưa User.php lên trên cùng đầu tiên
+require_once __DIR__ . '/../../../middleware/RoleMiddleware.php';
+RoleMiddleware::check(1);
+require_once __DIR__ . '/../../../middleware/AutoLoginMiddleware.php';
+AutoLoginMiddleware::check();
 require_once __DIR__ . '/../../../models/User.php';
 require_once __DIR__ . '/../../../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../../../middleware/CsrfMiddleware.php';

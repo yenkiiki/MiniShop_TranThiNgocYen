@@ -12,7 +12,7 @@ class User {
     public int $status;
     public string $createdAt;
     public string $updatedAt;
-
+public ?string $rememberToken;
     public function __construct() {
         $this->role = 0;
         $this->status = 1;

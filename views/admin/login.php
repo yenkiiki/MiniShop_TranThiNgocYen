@@ -12,6 +12,11 @@ CsrfMiddleware::generateToken();
 $errors = [];
 $username = "";
 
+// Bắt thông báo lỗi khi bị đá văng từ RoleMiddleware sang
+if (isset($_GET['error']) && $_GET['error'] === 'unauthorized') {
+    $errors["system"] = "Tài khoản của bạn không có quyền quản trị để truy cập khu vực này!";
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     
     CsrfMiddleware::verify();
@@ -40,6 +45,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 $_SESSION["user"] = $user;
 
+                // XỬ LÝ GHI NHỚ ĐĂNG NHẬP (REMEMBER ME)
+                if (isset($_POST["remember"])) {
+                    // Tạo token ngẫu nhiên, an toàn
+                    $token = bin2hex(random_bytes(32));
+                    
+                    // Lưu token vào Database
+                    $userDAO->updateRememberToken($user->id, $token);
+                    
+                    // Lưu Cookie trong 30 ngày
+                    setcookie("remember_token", $token, time() + (86400 * 30), "/", "", false, true);
+                } else {
+                    // Nếu không chọn, xóa cookie cũ nếu có
+                    if (isset($_COOKIE["remember_token"])) {
+                        setcookie("remember_token", "", time() - 3600, "/");
+                    }
+                }
+
                 header("Location: /MINISHOP_TRANTHINGOCYEN/views/admin/dashboard.php");
                 exit();
             }
@@ -67,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <h3 class="text-center mb-4 fw-bold text-primary">Đăng nhập Admin</h3>
 
                     <?php if (isset($errors["system"])): ?>
-                        <div class="alert alert-danger" role="alert">
+                        <div class="alert alert-danger text-center" role="alert">
                             <?= $errors["system"] ?>
                         </div>
                     <?php endif; ?>
