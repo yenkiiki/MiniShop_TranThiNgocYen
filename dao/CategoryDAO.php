@@ -1,4 +1,7 @@
 <?php
+namespace DAO;
+
+use Models\Category;
 require_once __DIR__ . "/BaseDAO.php";
 require_once __DIR__ . "/../models/Category.php";
 
@@ -144,20 +147,34 @@ class CategoryDAO extends BaseDAO
         }
         return 0;
     }
-    public function count(string $keyword = ""): int
+    public function count(string $keyword = "", string $status = ""): int
     {
         try {
-            $sql = "SELECT COUNT(*) as total FROM categories";
+            $sql = "SELECT COUNT(*) as total FROM categories WHERE 1=1";
+            $params = [];
+            $types = "";
+
             if (!empty($keyword)) {
-                $sql .= " WHERE catename LIKE ? OR slug LIKE ?";
-                $stmt = $this->prepare($sql);
+                $sql .= " AND (catename LIKE ? OR slug LIKE ?)";
                 $searchTerm = "%" . $keyword . "%";
-                $stmt->bind_param("ss", $searchTerm, $searchTerm);
-                $stmt->execute();
-                $result = $stmt->get_result();
-            } else {
-                $result = $this->executeQuery($sql);
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "ss";
             }
+
+            if ($status !== "") {
+                $sql .= " AND status = ?";
+                $params[] = (int)$status;
+                $types .= "i";
+            }
+
+            $stmt = $this->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($types, ...$params);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
+
             if ($row = $result->fetch_assoc()) {
                 return (int)$row["total"];
             }
@@ -167,24 +184,36 @@ class CategoryDAO extends BaseDAO
         return 0;
     }
 
-    // Lấy danh sách danh mục phân trang và tìm kiếm
-    public function getPage(int $limit, int $offset, string $keyword = ""): array
+    // Lấy danh sách phân trang, tìm kiếm và lọc trạng thái
+    public function getPage(int $limit, int $offset, string $keyword = "", string $status = ""): array
     {
         $list = [];
         try {
-            $sql = "SELECT id, catename, slug, image, description, status, created_at, updated_at FROM categories";
+            $sql = "SELECT id, catename, slug, image, description, status, created_at, updated_at FROM categories WHERE 1=1";
+            $params = [];
+            $types = "";
+
             if (!empty($keyword)) {
-                $sql .= " WHERE catename LIKE ? OR slug LIKE ?";
+                $sql .= " AND (catename LIKE ? OR slug LIKE ?)";
+                $searchTerm = "%" . $keyword . "%";
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "ss";
             }
-            $sql .= " ORDER BY catename LIMIT ? OFFSET ?";
+
+            if ($status !== "") {
+                $sql .= " AND status = ?";
+                $params[] = (int)$status;
+                $types .= "i";
+            }
+
+            $sql .= " ORDER BY id DESC LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+            $types .= "ii";
 
             $stmt = $this->prepare($sql);
-            if (!empty($keyword)) {
-                $searchTerm = "%" . $keyword . "%";
-                $stmt->bind_param("ssii", $searchTerm, $searchTerm, $limit, $offset);
-            } else {
-                $stmt->bind_param("ii", $limit, $offset);
-            }
+            $stmt->bind_param($types, ...$params);
             $stmt->execute();
             $result = $stmt->get_result();
 

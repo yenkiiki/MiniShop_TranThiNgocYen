@@ -1,4 +1,6 @@
 <?php
+namespace Middleware;
+
 class CsrfMiddleware
 {
     public static function generateToken()

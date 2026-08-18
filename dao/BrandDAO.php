@@ -1,4 +1,9 @@
 <?php
+namespace DAO;
+
+use Models\Brand;
+use Exception;
+
 require_once __DIR__ . "/BaseDAO.php";
 require_once __DIR__ . "/../models/Brand.php";
 
@@ -98,10 +103,11 @@ class BrandDAO extends BaseDAO
         }
     }
 
+    // Phương thức xóa dữ liệu trong cơ sở dữ liệu (DAO)
     public function delete(int $id): bool
     {
         try {
-            $sql = "DELETE FROM brands WHERE id=?";
+            $sql = "DELETE FROM brands WHERE id = ?";
             $stmt = $this->prepare($sql);
             $stmt->bind_param("i", $id);
             return $stmt->execute();
@@ -109,6 +115,7 @@ class BrandDAO extends BaseDAO
             throw $e;
         }
     }
+
     public function countAll(): int
     {
         try {
@@ -122,6 +129,7 @@ class BrandDAO extends BaseDAO
         }
         return 0;
     }
+
     public function count(string $tableName = "brands", string $column = "brandname", string $keyword = "", $status = ""): int
     {
         try {
@@ -158,7 +166,6 @@ class BrandDAO extends BaseDAO
         return 0;
     }
 
-    // Lấy danh sách phân trang kết hợp tìm kiếm và lọc trạng thái
     public function getPage(int $limit, int $offset, string $keyword = "", $status = ""): array
     {
         $list = [];

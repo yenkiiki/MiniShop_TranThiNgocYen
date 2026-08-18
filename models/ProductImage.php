@@ -1,5 +1,5 @@
 <?php
-
+namespace Models;
 class ProductImage {
     public int $id;
     public int $productId;

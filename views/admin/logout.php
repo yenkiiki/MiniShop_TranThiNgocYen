@@ -25,6 +25,5 @@ if (isset($_COOKIE['remember_token'])) {
 session_unset();
 session_destroy();
 
-// Điều hướng về trang đăng nhập
-header("Location: login.php");
-exit();
+header("Location: /MINISHOP_TRANTHINGOCYEN/index.php?area=admin&controller=auth&action=login");
+exit(); 

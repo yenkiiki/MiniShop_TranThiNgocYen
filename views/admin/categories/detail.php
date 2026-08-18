@@ -1,39 +1,13 @@
 <?php
-// Bật hiển thị lỗi để debug
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Gọi các DAO và Model cần thiết
-require_once __DIR__ . "/../../../config/Database.php";
-require_once __DIR__ . "/../../../dao/CategoryDAO.php";
-require_once __DIR__ . "/../../../models/Category.php";
-
-$categoryDAO = new CategoryDAO();
-
-// Nhận id từ URL và ép kiểu sang số nguyên
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-// Gọi phương thức findById để lấy thông tin danh mục từ DAO
-$category = $categoryDAO->findById($id);
-
-// Nếu không tìm thấy danh mục theo ID, chuyển hướng về trang danh sách
-if (!$category) {
-    header("Location: index.php");
-    exit();
-}
-
-// Đặt tiêu đề trang
 $pageTitle = "Chi tiết danh mục - Mini Shop";
-
-// Sử dụng buffer để đưa nội dung vào layout chung master.php
 ob_start();
 ?>
 
 <div class="container-fluid px-4">
     <h1 class="mt-4">Quản lý danh mục</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="index.php">Danh mục sản phẩm</a></li>
+        <li class="breadcrumb-item"><a href="index.php?controller=dashboard&action=index">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="index.php?controller=category&action=index">Danh mục sản phẩm</a></li>
         <li class="breadcrumb-item active">Chi tiết</li>
     </ol>
 
@@ -43,7 +17,7 @@ ob_start();
                 <i class="fas fa-eye me-1"></i>
                 Chi tiết thông tin danh mục
             </div>
-            <a href="index.php" class="btn btn-secondary btn-sm">
+            <a href="index.php?controller=category&action=index" class="btn btn-secondary btn-sm">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
         </div>
@@ -66,7 +40,10 @@ ob_start();
                         <th class="bg-light">Hình ảnh:</th>
                         <td>
                             <?php if (!empty($category->image)): ?>
-                                <img src="<?= BASE_URL ?>uploads/categories/<?= htmlspecialchars($category->image) ?>" alt="Image" style="max-height: 100px;" class="img-thumbnail">
+                                <img src="/MiniShop_TranThiNgocYen/uploads/categories/<?= htmlspecialchars($category->image) ?>" 
+                                     alt="Image" 
+                                     style="max-height: 100px; width: 100px; object-fit: cover;" 
+                                     class="img-thumbnail rounded shadow-sm">
                             <?php else: ?>
                                 <span class="text-muted">Không có hình ảnh</span>
                             <?php endif; ?>
@@ -99,13 +76,10 @@ ob_start();
 
             <!-- Các nút thao tác -->
             <div class="mt-4">
-                <a href="edit.php?id=<?= $category->id ?>" class="btn btn-warning text-white">
+                <a href="index.php?controller=category&action=edit&id=<?= $category->id ?>" class="btn btn-warning text-white">
                     <i class="fas fa-edit"></i> Sửa
                 </a>
-                <a href="delete.php?id=<?= $category->id ?>" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này không?');">
-                    <i class="fas fa-trash"></i> Xóa
-                </a>
-                <a href="index.php" class="btn btn-secondary">
+                <a href="index.php?controller=category&action=index" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Quay lại danh sách
                 </a>
             </div>
@@ -115,5 +89,5 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-include "../layouts/master.php";
+include __DIR__ . "/../layouts/master.php";
 ?>

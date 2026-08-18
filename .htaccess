@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /MINISHOP_TRANTHINGOCYEN/
+
+    # Không can thiệp vào các file hoặc thư mục có thật (css, js, ảnh...)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Đưa mọi request dạng /admin/login về index.php?path=...
+    RewriteRule ^(.*)$ index.php?path=$1 [QSA,L]
+</IfModule>

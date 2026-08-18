@@ -1,5 +1,5 @@
 <?php
-
+namespace Models;
 class Customer {
     public int $id;
     public string $fullName;

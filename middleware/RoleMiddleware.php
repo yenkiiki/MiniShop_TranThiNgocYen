@@ -1,9 +1,8 @@
 <?php
-require_once __DIR__ . '/../models/User.php';
-
+namespace Middleware;
 class RoleMiddleware
 {
-    public static function check(int $requiredRole)
+    public static function check($requiredRole = 1)
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -11,17 +10,29 @@ class RoleMiddleware
 
         $user = $_SESSION['user'] ?? null;
 
-        if (!($user instanceof User)) {
-            unset($_SESSION['user']);
-            header("Location: " . BASE_URL . "views/admin/login.php");
+        // Nếu chưa đăng nhập
+        if (!$user) {
+            header("Location: /MINISHOP_TRANTHINGOCYEN/views/admin/login.php");
             exit();
         }
 
-        if ((int)$user->role !== $requiredRole) {
-            // Hủy session của user 
-            unset($_SESSION['user']);
-            
-            header("Location: " . BASE_URL . "views/admin/login.php?error=unauthorized");
+        // Lấy role linh hoạt (hỗ trợ cả Object lẫn Array)
+        $userRole = null;
+        if (is_object($user)) {
+            $userRole = $user->role ?? null;
+        } elseif (is_array($user)) {
+            $userRole = $user['role'] ?? null;
+        }
+
+        // Kiểm tra quyền: Chấp nhận nếu role là 1, '1', hoặc 'admin'
+        $isAuthorized = false;
+        if ($userRole == $requiredRole || $userRole === 'admin' || $userRole === 1) {
+            $isAuthorized = true;
+        }
+
+        if (!$isAuthorized) {
+            // Nếu không đúng quyền thì mới đá về login kèm thông báo
+            header("Location: /MINISHOP_TRANTHINGOCYEN/views/admin/login.php?error=unauthorized");
             exit();
         }
     }

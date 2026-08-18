@@ -1,7 +1,5 @@
 <?php
-require_once __DIR__ . '/../models/User.php';
-require_once __DIR__ . '/../dao/UserDAO.php';
-
+namespace Middleware;
 class AutoLoginMiddleware
 {
     public static function check()

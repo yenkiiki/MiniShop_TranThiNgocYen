@@ -1,4 +1,7 @@
 <?php
+namespace DAO;
+use Models\ProductImage;
+use Models\Product;
 require_once __DIR__ . "/BaseDAO.php";
 require_once __DIR__ . "/../models/Product.php";
 require_once __DIR__ . "/../models/ProductImage.php";

@@ -1,24 +1,28 @@
 <?php
+use Middleware\GuestMiddleware;
+use Middleware\CsrfMiddleware;
+use DAO\UserDAO;
+
 require_once __DIR__ . "/../../config/Database.php";
 require_once __DIR__ . "/../../models/User.php";
 require_once __DIR__ . "/../../dao/UserDAO.php";
 require_once __DIR__ . "/../../middleware/GuestMiddleware.php";
 require_once __DIR__ . "/../../middleware/CsrfMiddleware.php";
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 GuestMiddleware::handle();
 CsrfMiddleware::generateToken();
 
 $errors = [];
 $username = "";
 
-// Bắt thông báo lỗi khi bị đá văng từ RoleMiddleware sang
 if (isset($_GET['error']) && $_GET['error'] === 'unauthorized') {
     $errors["system"] = "Tài khoản của bạn không có quyền quản trị để truy cập khu vực này!";
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    
     CsrfMiddleware::verify();
 
     $username = trim($_POST["username"] ?? "");
@@ -43,26 +47,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } elseif ($user->status == 0) {
                 $errors["username"] = "Tài khoản của bạn đã bị khóa!";
             } else {
-                $_SESSION["user"] = $user;
+                $_SESSION["user"] = [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'fullName' => $user->fullName ?? $user->fullname ?? $user->full_name ?? 'Admin',
+                    'status' => $user->status,
+                    'role' => $user->role ?? 1
+                ];
 
-                // XỬ LÝ GHI NHỚ ĐĂNG NHẬP (REMEMBER ME)
                 if (isset($_POST["remember"])) {
-                    // Tạo token ngẫu nhiên, an toàn
                     $token = bin2hex(random_bytes(32));
-                    
-                    // Lưu token vào Database
                     $userDAO->updateRememberToken($user->id, $token);
-                    
-                    // Lưu Cookie trong 30 ngày
                     setcookie("remember_token", $token, time() + (86400 * 30), "/", "", false, true);
                 } else {
-                    // Nếu không chọn, xóa cookie cũ nếu có
                     if (isset($_COOKIE["remember_token"])) {
                         setcookie("remember_token", "", time() - 3600, "/");
                     }
                 }
-
-                header("Location: /MINISHOP_TRANTHINGOCYEN/views/admin/dashboard.php");
+                header("Location: /MINISHOP_TRANTHINGOCYEN/admin/dashboard");
                 exit();
             }
         } catch (Exception $e) {
@@ -73,57 +75,44 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập hệ thống - Mini Shop</title>
-    <link href="<?= BASE_URL ?>assets/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= BASE_URL ?>assets/css/style.css" rel="stylesheet">
+    <!-- Nhúng trực tiếp 2 file bootstrap sẵn có trong thư mục assets -->
+    <link href="/MINISHOP_TRANTHINGOCYEN/assets/bootstrap.min.css" rel="stylesheet">
+    <link href="/MINISHOP_TRANTHINGOCYEN/assets/css/style.css" rel="stylesheet">
 </head>
+
 <body class="bg-light">
-<div class="container">
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-5">
-            <div class="card shadow border-0">
-                <div class="card-body p-4">
+    <!-- Phần form giao diện được dựng sẵn bằng các class bootstrap có sẵn -->
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-5">
+                <div class="card shadow border-0 p-4">
                     <h3 class="text-center mb-4 fw-bold text-primary">Đăng nhập Admin</h3>
 
                     <?php if (isset($errors["system"])): ?>
-                        <div class="alert alert-danger text-center" role="alert">
-                            <?= $errors["system"] ?>
-                        </div>
+                        <div class="alert alert-danger text-center"><?= $errors["system"] ?></div>
                     <?php endif; ?>
 
-                    <form action="login.php" method="POST" novalidate>
-                        <input type="hidden" name="csrf_token" value="<?= $_SESSION["csrf_token"] ?>">
+     <form action="/MINISHOP_TRANTHINGOCYEN/admin/login" method="POST">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION["csrf_token"] ?? '' ?>">
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tên đăng nhập</label>
-                            <input type="text" 
-                                   name="username" 
-                                   required
-                                   class="form-control <?= isset($errors["username"]) ? 'is-invalid' : '' ?>" 
-                                   placeholder="Nhập tên đăng nhập" 
-                                   value="<?= htmlspecialchars($username) ?>">
-                            <?php if (isset($errors["username"])): ?>
-                                <div class="invalid-feedback">
-                                    <?= $errors["username"] ?>
-                                </div>
-                            <?php endif; ?>
+                            <input type="text" name="username"
+                                class="form-control <?= isset($errors["username"]) ? 'is-invalid' : '' ?>"
+                                value="<?= htmlspecialchars($username) ?>">
+                            <div class="invalid-feedback"><?= $errors["username"] ?? '' ?></div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Mật khẩu</label>
-                            <input type="password" 
-                                   name="password" 
-                                   required
-                                   class="form-control <?= isset($errors["password"]) ? 'is-invalid' : '' ?>" 
-                                   placeholder="Nhập mật khẩu">
-                            <?php if (isset($errors["password"])): ?>
-                                <div class="invalid-feedback">
-                                    <?= $errors["password"] ?>
-                                </div>
-                            <?php endif; ?>
+                            <input type="password" name="password"
+                                class="form-control <?= isset($errors["password"]) ? 'is-invalid' : '' ?>">
+                            <div class="invalid-feedback"><?= $errors["password"] ?? '' ?></div>
                         </div>
 
                         <div class="mb-3 form-check">
@@ -137,12 +126,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </form>
                 </div>
             </div>
-            <div class="text-center mt-3 text-muted small">
-                &copy; Mini Shop Management System
-            </div>
         </div>
     </div>
-</div>
-<script src="<?= BASE_URL ?>assets/bootstrap.bundle.min.js"></script>
+    <script src="/MINISHOP_TRANTHINGOCYEN/assets/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

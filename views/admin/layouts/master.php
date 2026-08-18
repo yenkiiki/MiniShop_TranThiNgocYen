@@ -1,19 +1,7 @@
 <?php
-require_once __DIR__ . '/../../../middleware/RoleMiddleware.php';
-RoleMiddleware::check(1);
-require_once __DIR__ . '/../../../middleware/AutoLoginMiddleware.php';
-AutoLoginMiddleware::check();
-require_once __DIR__ . '/../../../models/User.php';
-require_once __DIR__ . '/../../../middleware/AuthMiddleware.php';
-require_once __DIR__ . '/../../../middleware/CsrfMiddleware.php';
-
-// Sau đó mới khởi động session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-AuthMiddleware::handle();
-CsrfMiddleware::generateToken();
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -21,14 +9,15 @@ CsrfMiddleware::generateToken();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?? 'Quản trị Mini Shop' ?></title>
-    <link href="<?= BASE_URL ?>assets/bootstrap.min.css" rel="stylesheet">
+    <link href="<?= defined('BASE_URL') ? BASE_URL : '/MINISHOP_TRANTHINGOCYEN/' ?>assets/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <?php include "header.php"; ?>
+    <?php include __DIR__ . "/header.php"; ?>
 
     <div class="container-fluid">
         <div class="row">
-            <?php include "sidebar.php"; ?>
+            <?php include __DIR__ . "/sidebar.php"; ?>
             
             <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
                 <?= $content ?? '' ?>
@@ -36,6 +25,8 @@ CsrfMiddleware::generateToken();
         </div>
     </div>
 
-    <?php include "footer.php"; ?>
+    <?php include __DIR__ . "/footer.php"; ?>
+    <script src="<?= defined('BASE_URL') ? BASE_URL : '/MINISHOP_TRANTHINGOCYEN/' ?>assets/bootstrap.bundle.min.js"></script>
+    <script src="<?= defined('BASE_URL') ? BASE_URL : '/MINISHOP_TRANTHINGOCYEN/' ?>assets/admin/admin.js"></script>
 </body>
 </html>

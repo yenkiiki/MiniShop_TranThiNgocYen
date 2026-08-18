@@ -1,80 +1,5 @@
 <?php
-// Bật hiển thị lỗi để dễ debug
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Gọi các DAO và Model cần thiết
-require_once __DIR__ . "/../../../config/Database.php";
-require_once __DIR__ . "/../../../dao/OrderDAO.php";
-
-$orderDAO = new OrderDAO();
-$message = "";
-$error = "";
-
-// Mảng định nghĩa trạng thái đơn hàng mới theo yêu cầu
-$statusList = [
-    0 => ['label' => 'Chờ xác nhận', 'class' => 'bg-warning text-dark'],
-    1 => ['label' => 'Đã xác nhận', 'class' => 'bg-info text-dark'],
-    2 => ['label' => 'Đang giao', 'class' => 'bg-primary text-white'],
-    3 => ['label' => 'Hoàn thành', 'class' => 'bg-success text-white'],
-    4 => ['label' => 'Đã hủy', 'class' => 'bg-danger text-white']
-];
-
-// XỬ LÝ CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG NHANH (METHOD POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnUpdateStatus'])) {
-    $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
-    $status = isset($_POST['status']) ? (int) $_POST['status'] : 0;
-
-    if ($id > 0) {
-        try {
-            $result = $orderDAO->updateStatus($id, $status);
-            if ($result) {
-                header("Location: index.php?msg=update_success");
-                exit();
-            } else {
-                $error = "Cập nhật trạng thái thất bại!";
-            }
-        } catch (Exception $e) {
-            $error = "Lỗi hệ thống: " . $e->getMessage();
-        }
-    }
-}
-
-if (isset($_GET['msg']) && $_GET['msg'] === 'update_success') {
-    $message = "Cập nhật trạng thái đơn hàng thành công!";
-}
-
-// --- NHẬN CÁC THAM SỐ TÌM KIẾM, LỌC, PHÂN TRANG VÀ LIMIT ---
-$keyword = isset($_GET["keyword"]) ? trim($_GET["keyword"]) : "";
-$searchStatus = isset($_GET["search_status"]) && $_GET["search_status"] !== "" ? (int)$_GET["search_status"] : "";
-
-// Giới hạn số bản ghi trên trang (Mặc định 10, hỗ trợ 10, 20, 30)
-$limit = (int)($_GET["limit"] ?? 2);
-if (!in_array($limit, [10, 20, 30])) {
-    $limit = 2;
-}
-
-$page = (int)($_GET["page"] ?? 1);
-if ($page < 1) $page = 1;
-$offset = ($page - 1) * $limit;
-
-// Tính toán tổng số bản ghi và tổng số trang
-$totalRecords = $orderDAO->countSearch($keyword, $searchStatus);
-$totalPages = $totalRecords > 0 ? ceil($totalRecords / $limit) : 1;
-
-if ($page > $totalPages) {
-    $page = $totalPages;
-}
-
-// Lấy dữ liệu phân trang
-$orders = [];
-try {
-    $orders = $orderDAO->getPage($limit, $offset, $keyword, $searchStatus);
-} catch (Exception $e) {
-    $error = "Lỗi tải dữ liệu: " . $e->getMessage();
-}
-
-$pageTitle = "Quản lý đơn hàng - Mini Shop";
+// views/admin/orders/index.php
 ob_start();
 ?>
 
@@ -104,7 +29,9 @@ ob_start();
         <div class="card-header"><i class="fas fa-search me-1"></i> Tìm kiếm & Lọc đơn hàng</div>
         <div class="card-body">
             <form method="GET" class="row g-3">
-                <!-- Giữ giá trị limit hiện tại khi tìm kiếm -->
+                <!-- Giữ lại router controller và action -->
+                <input type="hidden" name="controller" value="order">
+                <input type="hidden" name="action" value="index">
                 <input type="hidden" name="limit" value="<?= $limit ?>">
 
                 <div class="col-md-5">
@@ -120,7 +47,7 @@ ob_start();
                 </div>
                 <div class="col-md-3">
                     <button type="submit" class="btn btn-primary me-2"><i class="fas fa-search"></i> Tìm</button>
-                    <a href="index.php" class="btn btn-secondary"><i class="fas fa-redo"></i> Làm mới</a>
+                    <a href="index.php?controller=order&action=index" class="btn btn-secondary"><i class="fas fa-redo"></i> Làm mới</a>
                 </div>
             </form>
         </div>
@@ -167,7 +94,7 @@ ob_start();
                                         <span class="badge <?= $badgeInfo['class'] ?>"><?= $badgeInfo['label'] ?></span>
                                     </td>
                                     <td class="text-nowrap">
-                                        <a href="detail.php?id=<?= $od['id'] ?>" class="btn btn-info text-white btn-sm" title="Chi tiết">
+                                        <a href="index.php?controller=order&action=detail&id=<?= $od['id'] ?>" class="btn btn-info text-white btn-sm" title="Chi tiết">
                                             <i class="fas fa-eye"></i> Chi tiết
                                         </a>
 
@@ -180,7 +107,7 @@ ob_start();
                                         <div class="modal fade text-start" id="statusModal<?= $od['id'] ?>" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
-                                                    <form action="" method="POST">
+                                                    <form action="index.php?controller=order&action=index" method="POST">
                                                         <div class="modal-header">
                                                             <h5 class="modal-title">Cập nhật trạng thái đơn: <?= htmlspecialchars($od['order_code']) ?></h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -227,6 +154,8 @@ ob_start();
                 <div class="d-flex align-items-center">
                     <label class="me-2">Hiển thị:</label>
                     <form method="GET">
+                        <input type="hidden" name="controller" value="order">
+                        <input type="hidden" name="action" value="index">
                         <?php if (!empty($keyword)): ?>
                             <input type="hidden" name="keyword" value="<?= htmlspecialchars($keyword) ?>">
                         <?php endif; ?>
@@ -247,18 +176,18 @@ ob_start();
                         <ul class="pagination mb-0">
                             <!-- Nút Trước -->
                             <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?limit=<?= $limit ?>&page=<?= $page - 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Trước</a>
+                                <a class="page-link" href="?controller=order&action=index&limit=<?= $limit ?>&page=<?= $page - 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Trước</a>
                             </li>
                             
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                                    <a class="page-link" href="?limit=<?= $limit ?>&page=<?= $i ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>"><?= $i ?></a>
+                                    <a class="page-link" href="?controller=order&action=index&limit=<?= $limit ?>&page=<?= $i ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
                             
                             <!-- Nút Sau -->
                             <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?limit=<?= $limit ?>&page=<?= $page + 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Sau</a>
+                                <a class="page-link" href="?controller=order&action=index&limit=<?= $limit ?>&page=<?= $page + 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Sau</a>
                             </li>
                         </ul>
                     </nav>
@@ -271,5 +200,5 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-include "../layouts/master.php";
+include __DIR__ . "/../../../views/admin/layouts/master.php";
 ?>

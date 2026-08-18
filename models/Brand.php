@@ -1,5 +1,5 @@
 <?php
-
+namespace Models;
 class Brand {
     public int $id;
     public string $brandName;
