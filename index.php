@@ -36,8 +36,8 @@ $path = trim($path, '/');
 $segments = $path !== '' ? explode('/', $path) : [];
 
 // Mặc định ban đầu
-$area = "admin";
-$controller = "dashboard";
+$area = "client";
+$controller = "home";
 $action = "index";
 
 if (!empty($segments)) {
@@ -94,8 +94,8 @@ $_GET['controller'] = $controller;
 $_GET['action'] = $action;
 // --- KẾT THÚC XỬ LÝ URL THÂN THIỆN ---
 
-// Xây dựng Namespace linh hoạt
-$namespace = ($area === 'admin') ? "Controllers\\Admin\\" : "Controllers\\";
+// Sửa lại đoạn xây dựng Namespace linh hoạt
+$namespace = ($area === 'admin') ? "Controllers\\Admin\\" : "Controllers\\Client\\";
 $controllerClass = $namespace . ucfirst($controller) . "Controller";
 
 // 3. Kiểm tra class có tồn tại hay không
