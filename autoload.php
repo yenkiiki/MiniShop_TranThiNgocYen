@@ -5,11 +5,12 @@ define('PRODUCT_IMAGE_URL', BASE_URL . 'uploads/products/');
 spl_autoload_register(function ($className) {
     $prefixes = [
         'Controllers\\Admin\\' => __DIR__ . '/controllers/admin/',
-        'Controllers\\'        => __DIR__ . '/controllers/',
-        'DAO\\'                => __DIR__ . '/dao/',
-        'Models\\'             => __DIR__ . '/models/',
-        'Middleware\\'         => __DIR__ . '/middleware/',
-        'Config\\'             => __DIR__ . '/config/',
+        'Controllers\\' => __DIR__ . '/controllers/',
+        'DAO\\' => __DIR__ . '/dao/',
+        'Models\\' => __DIR__ . '/models/',
+        'Middleware\\' => __DIR__ . '/middleware/',
+        'Config\\' => __DIR__ . '/config/',
+        'Composers\\' => __DIR__ . '/app/Composers/',
     ];
 
     foreach ($prefixes as $prefix => $base_dir) {

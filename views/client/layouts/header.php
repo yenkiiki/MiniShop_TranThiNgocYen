@@ -1,7 +1,14 @@
+<?php
+use Composers\HeaderComposer;
+$headerData = HeaderComposer::compose();
+$categories = $headerData['categories'];
+$brands = $headerData['brands'];
+?>
+
 <header class="bg-light border-bottom sticky-top">
     <div class="container">
         <nav class="navbar navbar-expand-lg navbar-light py-3">
-            <a class="navbar-brand fw-bold text-primary" href="/MINISHOP_TRANTHINGOCYEN/">
+            <a class="navbar-brand fw-bold text-primary" href="<?= BASE_URL ?>">
                 <i class="bi bi-shop"></i> MINISHOP
             </a>
 
@@ -11,21 +18,59 @@
 
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="/">Trang chủ</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/category">Danh mục</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/brand">Thương hiệu</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= BASE_URL ?>">Trang chủ</a>
+                    </li>
+
+      <!-- Phần hiển thị Danh mục -->
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Danh mục</a>
+    <ul class="dropdown-menu">
+        <?php foreach ($categories as $category): ?>
+            <?php 
+                // Xử lý linh hoạt: Nếu là Object thì dùng ->, nếu là Array thì dùng ['']
+                $catId = is_object($category) ? $category->id : $category['id'];
+                $catName = is_object($category) ? $category->cateName : $category['cateName'];
+            ?>
+            <li>
+                <a class="dropdown-item" href="<?= BASE_URL ?>product?category_id=<?= $catId ?>">
+                    <?= htmlspecialchars($catName) ?>
+                </a>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</li>
+
+<!-- Phần hiển thị Thương hiệu -->
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Thương hiệu</a>
+    <ul class="dropdown-menu">
+        <?php foreach ($brands as $brand): ?>
+            <?php 
+                // Xử lý linh hoạt: Nếu là Object thì dùng ->, nếu là Array thì dùng ['']
+                $brandId = is_object($brand) ? $brand->id : $brand['id'];
+                $brandName = is_object($brand) ? $brand->brandName : $brand['brandName'];
+            ?>
+            <li>
+                <a class="dropdown-item" href="<?= BASE_URL ?>product?brand_id=<?= $brandId ?>">
+                    <?= htmlspecialchars($brandName) ?>
+                </a>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</li>
                 </ul>
 
-                <form class="d-flex me-3" action="/product/search" method="GET">
+                <form class="d-flex me-3" action="<?= BASE_URL ?>product/search" method="GET">
                     <input class="form-control me-2" type="search" name="keyword" placeholder="Tìm sản phẩm..." aria-label="Search">
                     <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
                 </form>
 
                 <div class="d-flex align-items-center">
-                    <a href="/login" class="nav-link text-dark me-3">
+                    <a href="<?= BASE_URL ?>login" class="nav-link text-dark me-3">
                         <i class="bi bi-person-circle fs-4"></i>
                     </a>
-                    <a href="/cart" class="nav-link text-dark position-relative">
+                    <a href="<?= BASE_URL ?>cart" class="nav-link text-dark position-relative">
                         <i class="bi bi-cart3 fs-4"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             0

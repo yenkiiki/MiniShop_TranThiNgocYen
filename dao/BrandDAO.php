@@ -215,4 +215,31 @@ class BrandDAO extends BaseDAO
         }
         return $list;
     }
+public function getByLimit(int $limit = 5): array
+{
+    $list = [];
+    try {
+        $sql = "SELECT id, brandname, slug, image, description, status, created_at, updated_at FROM brands ORDER BY brandname LIMIT ?";
+        $stmt = $this->prepare($sql);
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $brand = new Brand();
+            $brand->id = (int)$row["id"];
+            $brand->brandName = $row["brandname"];
+            $brand->slug = $row["slug"];
+            $brand->image = $row["image"];
+            $brand->description = $row["description"];
+            $brand->status = (int)$row["status"];
+            $brand->createdAt = $row["created_at"];
+            $brand->updatedAt = $row["updated_at"];
+            $list[] = $brand;
+        }
+    } catch (Exception $e) {
+        throw $e;
+    }
+    return $list;
+}
 }
