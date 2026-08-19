@@ -1,8 +1,11 @@
 <?php
 namespace Controllers\Admin;
+
 use Config\Database;
 use DAO\OrderDAO;
 use Models\Order;
+use Exception;
+
 class OrderController
 {
     private $orderDAO;
@@ -12,12 +15,13 @@ class OrderController
         require_once __DIR__ . "/../../dao/OrderDAO.php";
         $this->orderDAO = new OrderDAO();
     }
-public function detail()
+
+    public function detail()
     {
         $orderId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
         if ($orderId <= 0) {
-            header("Location: index.php?controller=order&action=index");
+            header("Location: order");
             exit();
         }
 
@@ -43,7 +47,6 @@ public function detail()
                 $db = new Database();
                 $conn = $db->getConnection();
 
-                // Lấy tên khách hàng
                 if (!empty($order->customerId)) {
                     $stmtC = $conn->prepare("SELECT fullname FROM customers WHERE id = ?");
                     $stmtC->bind_param("i", $order->customerId);
@@ -54,7 +57,6 @@ public function detail()
                     }
                 }
 
-                // Lấy tên nhân viên xử lý
                 if (!empty($order->userId)) {
                     $stmtU = $conn->prepare("SELECT fullname FROM users WHERE id = ?");
                     $stmtU->bind_param("i", $order->userId);
@@ -65,7 +67,6 @@ public function detail()
                     }
                 }
 
-                // Lấy danh sách sản phẩm của đơn hàng
                 $orderDetails = $this->orderDAO->getDetailsByOrderId($orderId);
             } else {
                 $error = "Không tìm thấy đơn hàng!";
@@ -76,15 +77,14 @@ public function detail()
 
         $pageTitle = "Chi tiết đơn hàng - Mini Shop";
 
-        // Gọi sang file View chi tiết
         require_once __DIR__ . "/../../views/admin/orders/detail.php";
     }
+
     public function index()
     {
         $message = "";
         $error = "";
 
-        // Mảng định nghĩa trạng thái đơn hàng
         $statusList = [
             0 => ['label' => 'Chờ xác nhận', 'class' => 'bg-warning text-dark'],
             1 => ['label' => 'Đã xác nhận', 'class' => 'bg-info text-dark'],
@@ -93,7 +93,6 @@ public function detail()
             4 => ['label' => 'Đã hủy', 'class' => 'bg-danger text-white']
         ];
 
-        // XỬ LÝ CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG NHANH (METHOD POST)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnUpdateStatus'])) {
             $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
             $status = isset($_POST['status']) ? (int) $_POST['status'] : 0;
@@ -102,7 +101,7 @@ public function detail()
                 try {
                     $result = $this->orderDAO->updateStatus($id, $status);
                     if ($result) {
-                        header("Location: index.php?controller=order&action=index&msg=update_success");
+                        header("Location: order?msg=update_success");
                         exit();
                     } else {
                         $error = "Cập nhật trạng thái thất bại!";
@@ -117,13 +116,12 @@ public function detail()
             $message = "Cập nhật trạng thái đơn hàng thành công!";
         }
 
-        // --- NHẬN CÁC THAM SỐ TÌM KIẾM, LỌC, PHÂN TRANG ---
         $keyword = isset($_GET["keyword"]) ? trim($_GET["keyword"]) : "";
         $searchStatus = isset($_GET["search_status"]) && $_GET["search_status"] !== "" ? (int)$_GET["search_status"] : "";
 
         $limit = (int)($_GET["limit"] ?? 2);
         if (!in_array($limit, [10, 20, 30])) {
-            $limit = 2; // Hoặc đổi mặc định thành 10 tùy bạn
+            $limit = 2;
         }
 
         $page = (int)($_GET["page"] ?? 1);
@@ -146,7 +144,6 @@ public function detail()
 
         $pageTitle = "Quản lý đơn hàng - Mini Shop";
 
-        // Gọi sang file View giao diện
         require_once __DIR__ . "/../../views/admin/orders/index.php";
     }
 }

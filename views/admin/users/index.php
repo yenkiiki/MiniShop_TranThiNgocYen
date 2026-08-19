@@ -6,7 +6,7 @@ ob_start();
 <div class="container-fluid px-4">
     <h1 class="mt-4">Quản lý tài khoản</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/MINISHOP_TRANTHINGOCYEN/admin/dashboard">Dashboard</a></li>
         <li class="breadcrumb-item active">Danh sách tài khoản</li>
     </ol>
 
@@ -28,9 +28,7 @@ ob_start();
     <div class="card mb-4">
         <div class="card-header"><i class="fas fa-search me-1"></i> Tìm kiếm & Lọc tài khoản</div>
         <div class="card-body">
-            <form method="GET" class="row g-3">
-                <input type="hidden" name="controller" value="user">
-                <input type="hidden" name="action" value="index">
+            <form method="GET" action="/MINISHOP_TRANTHINGOCYEN/admin/user" class="row g-3">
                 <input type="hidden" name="limit" value="<?= $limit ?>">
 
                 <div class="col-md-4">
@@ -54,7 +52,7 @@ ob_start();
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-primary me-1"><i class="fas fa-search"></i> Tìm</button>
-                    <a href="index.php?controller=user&action=index" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Làm mới</a>
+                    <a href="/MINISHOP_TRANTHINGOCYEN/admin/user" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Làm mới</a>
                 </div>
             </form>
         </div>
@@ -63,7 +61,7 @@ ob_start();
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div><i class="fas fa-users me-1"></i> Danh sách tài khoản</div>
-            <a href="index.php?controller=user&action=create" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Thêm mới</a>
+            <a href="/MINISHOP_TRANTHINGOCYEN/admin/user/create" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Thêm mới</a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -98,22 +96,22 @@ ob_start();
                                     <td>
                                         <?php 
                                             $roleKey = $user->role;
-                                            $roleInfo = $roleList[$roleKey] ?? ['label' => 'Không rõ', 'class' => 'bg-secondary'];
+                                            $roleInfo = $roleList[$roleKey] ?? ['label' => 'Không rõ', 'class' => 'bg-secondary text-white'];
                                         ?>
                                         <span class="badge <?= $roleInfo['class'] ?>"><?= $roleInfo['label'] ?></span>
                                     </td>
                                     <td>
                                         <?php 
                                             $sttKey = $user->status;
-                                            $badgeInfo = $statusList[$sttKey] ?? ['label' => 'Không rõ', 'class' => 'bg-secondary'];
+                                            $badgeInfo = $statusList[$sttKey] ?? ['label' => 'Không rõ', 'class' => 'bg-secondary text-white'];
                                         ?>
                                         <span class="badge <?= $badgeInfo['class'] ?>"><?= $badgeInfo['label'] ?></span>
                                     </td>
                                     <td><?= htmlspecialchars($user->createdAt) ?></td>
                                     <td class="text-nowrap">
-                                        <a href="index.php?controller=user&action=detail&id=<?= $user->id ?>" class="btn btn-info text-white btn-sm"><i class="fas fa-eye"></i> Xem</a>
-                                        <a href="index.php?controller=user&action=edit&id=<?= $user->id ?>" class="btn btn-warning text-white btn-sm"><i class="fas fa-edit"></i> Sửa</a>
-                                        <a href="index.php?controller=user&action=delete&id=<?= $user->id ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản này?');"><i class="fas fa-trash"></i> Xóa</a>
+                                        <a href="/MINISHOP_TRANTHINGOCYEN/admin/user/detail/<?= $user->id ?>" class="btn btn-info text-white btn-sm"><i class="fas fa-eye"></i> Xem</a>
+                                        <a href="/MINISHOP_TRANTHINGOCYEN/admin/user/edit/<?= $user->id ?>" class="btn btn-warning text-white btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                                        <a href="/MINISHOP_TRANTHINGOCYEN/admin/user/delete/<?= $user->id ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản này?');"><i class="fas fa-trash"></i> Xóa</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -130,9 +128,7 @@ ob_start();
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="d-flex align-items-center">
                     <label class="me-2">Hiển thị:</label>
-                    <form method="GET">
-                        <input type="hidden" name="controller" value="user">
-                        <input type="hidden" name="action" value="index">
+                    <form method="GET" action="/MINISHOP_TRANTHINGOCYEN/admin/user">
                         <?php if (!empty($keyword)): ?>
                             <input type="hidden" name="keyword" value="<?= htmlspecialchars($keyword) ?>">
                         <?php endif; ?>
@@ -156,19 +152,19 @@ ob_start();
                         <ul class="pagination mb-0">
                             <!-- Nút Trước -->
                             <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?controller=user&action=index&limit=<?= $limit ?>&page=<?= $page - 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchRole !== "" ? '&search_role=' . $searchRole : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Trước</a>
+                                <a class="page-link" href="/MINISHOP_TRANTHINGOCYEN/admin/user?limit=<?= $limit ?>&page=<?= $page - 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchRole !== "" ? '&search_role=' . $searchRole : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Trước</a>
                             </li>
                             
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                                    <a class="page-link" href="?controller=user&action=index&limit=<?= $limit ?>&page=<?= $i ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchRole !== "" ? '&search_role=' . $searchRole : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>"><?= $i ?></a>
+                                    <a class="page-link" href="/MINISHOP_TRANTHINGOCYEN/admin/user?limit=<?= $limit ?>&page=<?= $i ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchRole !== "" ? '&search_role=' . $searchRole : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
                             
                             <!-- Nút Sau -->
-                            <td class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?controller=user&action=index&limit=<?= $limit ?>&page=<?= $page + 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchRole !== "" ? '&search_role=' . $searchRole : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Sau</a>
-                            </td>
+                            <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                                <a class="page-link" href="/MINISHOP_TRANTHINGOCYEN/admin/user?limit=<?= $limit ?>&page=<?= $page + 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchRole !== "" ? '&search_role=' . $searchRole : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Sau</a>
+                            </li>
                         </ul>
                     </nav>
                 <?php endif; ?>

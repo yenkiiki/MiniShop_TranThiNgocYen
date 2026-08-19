@@ -22,6 +22,7 @@ ob_start();
         <div class="card-header"><i class="fas fa-edit me-1"></i> Form cập nhật thông tin khách hàng</div>
         <div class="card-body">
             <form action="index.php?controller=customer&action=edit&id=<?= $customer->id ?>" method="POST">
+                <?= csrf_field() ?>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Họ tên <span class="text-danger">*</span>:</label>

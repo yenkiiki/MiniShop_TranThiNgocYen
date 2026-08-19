@@ -134,6 +134,7 @@ ob_start();
                                         
                                         <!-- ĐÃ SỬA: Form Xóa -->
                                         <form action="/MINISHOP_TRANTHINGOCYEN/admin/brand/delete" method="POST" style="display:inline-block;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
+                                            <?= csrf_field() ?>
                                             <input type="hidden" name="id" value="<?= $brand->id ?>">
                                             <button type="submit" class="btn btn-danger btn-sm">
                                                 <i class="fas fa-trash"></i> Xóa

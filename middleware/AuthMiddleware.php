@@ -1,6 +1,8 @@
 <?php
 namespace Middleware;
 
+use DAO\UserDAO;
+
 class AuthMiddleware
 {
     public static function handle()
@@ -9,15 +11,36 @@ class AuthMiddleware
             session_start();
         }
 
-        // Nếu đang ở controller auth (trang đăng nhập) thì cho qua luôn, không check nữa
         if (isset($_GET['controller']) && $_GET['controller'] === 'auth') {
             return;
         }
 
-        // Kiểm tra nếu chưa đăng nhập thì đá về trang login chuẩn
-        if (!isset($_SESSION["user"])) {
-            header("Location: /MINISHOP_TRANTHINGOCYEN/index.php?area=admin&controller=auth&action=login");
-            exit();
+        if (isset($_SESSION["user"])) {
+            return;
         }
+
+        if (isset($_COOKIE['remember_token'])) {
+            $token = $_COOKIE['remember_token'];
+            
+            try {
+                $userDAO = new UserDAO();
+                $user = $userDAO->findByRememberToken($token);
+
+                if ($user && $user->status == 1) {
+                    $_SESSION["user"] = [
+                        'id' => $user->id,
+                        'username' => $user->username,
+                        'fullName' => $user->fullName ?? $user->fullname ?? $user->full_name ?? 'Admin',
+                        'status' => $user->status,
+                        'role' => $user->role ?? 1
+                    ];
+                    return;
+                }
+            } catch (\Exception $e) {
+            }
+        }
+
+        header("Location: /MINISHOP_TRANTHINGOCYEN/admin/login");
+        exit();
     }
 }

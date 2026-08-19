@@ -2,8 +2,8 @@
 <div class="container-fluid px-4">
     <h1 class="mt-4">Quản lý tài khoản</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="index.php?controller=user&action=index">Danh sách</a></li>
+        <li class="breadcrumb-item"><a href="/MINISHOP_TRANTHINGOCYEN/admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/MINISHOP_TRANTHINGOCYEN/admin/user">Danh sách tài khoản</a></li>
         <li class="breadcrumb-item active">Chỉnh sửa</li>
     </ol>
 
@@ -14,7 +14,9 @@
     <div class="card mb-4">
         <div class="card-header">Chỉnh sửa tài khoản: <strong><?= htmlspecialchars($user->userName) ?></strong></div>
         <div class="card-body">
-            <form method="POST" action="index.php?controller=user&action=update">
+            <!-- Sửa action thành đường dẫn sạch -->
+            <form method="POST" action="/MINISHOP_TRANTHINGOCYEN/admin/user/update">
+                <?= csrf_field() ?>
                 <input type="hidden" name="id" value="<?= $user->id ?>">
                 
                 <div class="row mb-3">
@@ -39,7 +41,6 @@
                     </div>
                 </div>
 
-                <!-- Bổ sung trường Số điện thoại và Địa chỉ -->
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Số điện thoại</label>
@@ -72,7 +73,8 @@
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-warning text-white"><i class="fas fa-save"></i> Cập nhật</button>
-                    <a href="index.php?controller=user&action=index" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+                    <!-- Sửa đường dẫn quay lại -->
+                    <a href="/MINISHOP_TRANTHINGOCYEN/admin/user" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
                 </div>
             </form>
         </div>

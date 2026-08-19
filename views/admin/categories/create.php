@@ -25,6 +25,7 @@ ob_start();
 
             <!-- ĐÃ SỬA ACTION THÀNH ĐƯỜNG DẪN SẠCH -->
             <form action="/MINISHOP_TRANTHINGOCYEN/admin/category/create" method="POST" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <?php if (isset($_SESSION["csrf_token"])): ?>
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION["csrf_token"] ?>">
                 <?php endif; ?>

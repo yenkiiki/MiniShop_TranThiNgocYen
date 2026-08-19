@@ -86,6 +86,7 @@ ob_start();
                                         <i class="fas fa-edit"></i> Sửa
                                     </a>
                                     <form action="/MINISHOP_TRANTHINGOCYEN/admin/category/delete" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này không?');" style="display:inline-block;">
+                                        <?= csrf_field() ?>
                                         <input type="hidden" name="id" value="<?= $category->id ?>">
                                         <button type="submit" class="btn btn-danger btn-sm">
                                             <i class="fas fa-trash"></i> Xóa

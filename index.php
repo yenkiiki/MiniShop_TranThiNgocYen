@@ -9,6 +9,26 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// --- BẮT ĐẦU CẤU HÌNH BẢO MẬT CSRF TỰ ĐỘNG ---
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+// Hàm sinh input ẩn cho các file View (create, edit,...)
+function csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . $_SESSION['csrf_token'] . '">';
+}
+
+// Hàm tự động xác thực token khi có request POST gửi lên hệ thống
+function verify_csrf() {
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            die("Lỗi bảo mật: CSRF Token không hợp lệ hoặc đã hết hạn! Vui lòng quay lại thao tác.");
+        }
+    }
+}
+// --- KẾT THÚC CẤU HÌNH BẢO MẬT CSRF ---
+
 // --- BẮT ĐẦU XỬ LÝ URL THÂN THIỆN (.HTACCESS) ---
 $path = $_GET['path'] ?? '';
 $path = str_replace('index.php', '', $path);
@@ -52,6 +72,22 @@ if (!empty($segments)) {
     }
 }
 
+// --- KIỂM TRA AUTHENTICATION / MIDDLEWARE CHO KHU VỰC ADMIN ---
+if ($area === 'admin') {
+    // Cho phép truy cập trang login và logout mà không cần đăng nhập
+    $isLoginRoute = (strtolower($controller) === 'auth' && in_array(strtolower($action), ['login', 'logout']));
+
+    if (!$isLoginRoute) {
+        // Kiểm tra xem session đăng nhập có tồn tại hay không 
+        if (!isset($_SESSION['user']) && !isset($_SESSION['admin_logged'])) {
+            // Chưa đăng nhập -> Chuyển hướng về trang login của admin
+            header("Location: " . rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . "/admin/login");
+            exit();
+        }
+    }
+}
+// --- KẾT THÚC KIỂM TRA MIDDLEWARE ---
+
 // Đồng bộ ngược lại các biến để khớp với hệ thống cũ của cậu
 $_GET['area'] = $area;
 $_GET['controller'] = $controller;
@@ -73,6 +109,9 @@ $controllerObject = new $controllerClass();
 if (!method_exists($controllerObject, $action)) {
     die("Action không tồn tại: " . htmlspecialchars($action));
 }
+
+// --- TỰ ĐỘNG CHẶN VÀ KIỂM TRA CSRF CHO TẤT CẢ REQUEST POST ---
+verify_csrf();
 
 // 5. Thực thi Action
 $controllerObject->$action();

@@ -34,6 +34,7 @@
                 <?php endif; ?>
 
                 <form method="POST" enctype="multipart/form-data" action="index.php?controller=category&action=edit&id=<?= $category->id ?>">
+                    <?= csrf_field() ?>
                     <!-- Tên danh mục -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tên danh mục <span class="text-danger">*</span></label>

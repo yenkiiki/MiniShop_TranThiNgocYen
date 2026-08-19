@@ -28,6 +28,7 @@ ob_start();
         </div>
         <div class="card-body">
             <form action="/MINISHOP_TRANTHINGOCYEN/admin/product/edit/<?= $productOld->id ?>" method="POST" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="proName" class="form-label fw-bold">Tên sản phẩm <span class="text-danger">*</span></label>

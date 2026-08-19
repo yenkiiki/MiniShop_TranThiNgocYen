@@ -1,9 +1,12 @@
-<?php ob_start(); ?>
+<?php 
+$pageTitle = "Thêm mới tài khoản người dùng";
+ob_start(); 
+?>
 <div class="container-fluid px-4">
     <h1 class="mt-4">Quản lý tài khoản</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="index.php?controller=user&action=index">Danh sách tài khoản</a></li>
+        <li class="breadcrumb-item"><a href="/MINISHOP_TRANTHINGOCYEN/admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/MINISHOP_TRANTHINGOCYEN/admin/user">Danh sách tài khoản</a></li>
         <li class="breadcrumb-item active">Thêm mới</li>
     </ol>
 
@@ -17,7 +20,8 @@
     <div class="card mb-4">
         <div class="card-header"><i class="fas fa-plus me-1"></i> Thêm mới tài khoản người dùng</div>
         <div class="card-body">
-            <form method="POST" action="index.php?controller=user&action=store">
+            <form method="POST" action="/MINISHOP_TRANTHINGOCYEN/admin/user/store">
+                <?= csrf_field() ?>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Họ tên <span class="text-danger">*</span></label>
@@ -40,7 +44,6 @@
                     </div>
                 </div>
 
-                <!-- Bổ sung trường Số điện thoại và Địa chỉ -->
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Số điện thoại</label>
@@ -57,7 +60,7 @@
                         <label class="form-label fw-bold">Vai trò</label>
                         <select name="role" class="form-select">
                             <?php foreach ($roleList as $key => $label): ?>
-                                <option value="<?= $key ?>"><?= $label ?></option>
+                                <option value="<?= $key ?>"><?= is_array($label) ? $label['label'] : $label ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -65,7 +68,7 @@
                         <label class="form-label fw-bold">Trạng thái</label>
                         <select name="status" class="form-select">
                             <?php foreach ($statusList as $key => $label): ?>
-                                <option value="<?= $key ?>"><?= $label ?></option>
+                                <option value="<?= $key ?>"><?= is_array($label) ? $label['label'] : $label ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -73,7 +76,7 @@
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Lưu thông tin</button>
-                    <a href="index.php?controller=user&action=index" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+                    <a href="/MINISHOP_TRANTHINGOCYEN/admin/user" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
                 </div>
             </form>
         </div>

@@ -1,5 +1,4 @@
 <?php
-// views/admin/orders/index.php
 ob_start();
 ?>
 
@@ -24,14 +23,10 @@ ob_start();
         </div>
     <?php endif; ?>
 
-    <!-- FORM TÌM KIẾM VÀ BỘ LỌC -->
     <div class="card mb-4">
         <div class="card-header"><i class="fas fa-search me-1"></i> Tìm kiếm & Lọc đơn hàng</div>
         <div class="card-body">
-            <form method="GET" class="row g-3">
-                <!-- Giữ lại router controller và action -->
-                <input type="hidden" name="controller" value="order">
-                <input type="hidden" name="action" value="index">
+            <form method="GET" action="order" class="row g-3">
                 <input type="hidden" name="limit" value="<?= $limit ?>">
 
                 <div class="col-md-5">
@@ -47,13 +42,12 @@ ob_start();
                 </div>
                 <div class="col-md-3">
                     <button type="submit" class="btn btn-primary me-2"><i class="fas fa-search"></i> Tìm</button>
-                    <a href="index.php?controller=order&action=index" class="btn btn-secondary"><i class="fas fa-redo"></i> Làm mới</a>
+                    <a href="order" class="btn btn-secondary"><i class="fas fa-redo"></i> Làm mới</a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- BẢNG HIỂN THỊ ĐƠN HÀNG -->
     <div class="card mb-4">
         <div class="card-header">
             <i class="fas fa-shopping-cart me-1"></i> Danh sách đơn hàng
@@ -94,7 +88,7 @@ ob_start();
                                         <span class="badge <?= $badgeInfo['class'] ?>"><?= $badgeInfo['label'] ?></span>
                                     </td>
                                     <td class="text-nowrap">
-                                        <a href="index.php?controller=order&action=detail&id=<?= $od['id'] ?>" class="btn btn-info text-white btn-sm" title="Chi tiết">
+                                        <a href="order/detail/<?= $od['id'] ?>" class="btn btn-info text-white btn-sm" title="Chi tiết">
                                             <i class="fas fa-eye"></i> Chi tiết
                                         </a>
 
@@ -103,11 +97,11 @@ ob_start();
                                             <i class="fas fa-edit"></i> Trạng thái
                                         </button>
 
-                                        <!-- Modal Cập nhật Trạng Thái -->
                                         <div class="modal fade text-start" id="statusModal<?= $od['id'] ?>" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
-                                                    <form action="index.php?controller=order&action=index" method="POST">
+                                                    <form action="order" method="POST">
+                                                        <?= csrf_field() ?>
                                                         <div class="modal-header">
                                                             <h5 class="modal-title">Cập nhật trạng thái đơn: <?= htmlspecialchars($od['order_code']) ?></h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -149,13 +143,10 @@ ob_start();
                 </table>
             </div>
 
-            <!-- THANH PHÂN TRANG VÀ CHỌN SỐ LƯỢNG HIỂN THỊ -->
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="d-flex align-items-center">
                     <label class="me-2">Hiển thị:</label>
-                    <form method="GET">
-                        <input type="hidden" name="controller" value="order">
-                        <input type="hidden" name="action" value="index">
+                    <form method="GET" action="order">
                         <?php if (!empty($keyword)): ?>
                             <input type="hidden" name="keyword" value="<?= htmlspecialchars($keyword) ?>">
                         <?php endif; ?>
@@ -170,24 +161,21 @@ ob_start();
                     </form>
                 </div>
 
-                <!-- Thanh phân trang (Pagination) -->
                 <?php if ($totalPages > 1): ?>
                     <nav class="mb-0">
                         <ul class="pagination mb-0">
-                            <!-- Nút Trước -->
                             <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?controller=order&action=index&limit=<?= $limit ?>&page=<?= $page - 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Trước</a>
+                                <a class="page-link" href="order?limit=<?= $limit ?>&page=<?= $page - 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Trước</a>
                             </li>
                             
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                                    <a class="page-link" href="?controller=order&action=index&limit=<?= $limit ?>&page=<?= $i ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>"><?= $i ?></a>
+                                    <a class="page-link" href="order?limit=<?= $limit ?>&page=<?= $i ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
                             
-                            <!-- Nút Sau -->
                             <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?controller=order&action=index&limit=<?= $limit ?>&page=<?= $page + 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Sau</a>
+                                <a class="page-link" href="order?limit=<?= $limit ?>&page=<?= $page + 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Sau</a>
                             </li>
                         </ul>
                     </nav>

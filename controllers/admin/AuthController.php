@@ -5,19 +5,32 @@ class AuthController
 {
     public function login()
     {
-        // Gọi file xử lý logic đăng nhập cũ của cậu vào đây
         require_once __DIR__ . "/../../views/admin/login.php";
     }
 
-    public function logout()
+   public function logout()
     {
-        // 1. Xóa session đăng xuất an toàn
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (isset($_SESSION['user']['id'])) {
+            try {
+                $userDAO = new \DAO\UserDAO();
+                $userDAO->updateRememberToken($_SESSION['user']['id'], null);
+            } catch (\Exception $e) {
+            }
+        }
+
+        if (isset($_COOKIE['remember_token'])) {
+            setcookie("remember_token", "", time() - 3600, "/");
+        }
+
         if (isset($_SESSION['user'])) {
             unset($_SESSION['user']);
         }
         session_destroy();
 
-        // 2. Chuyển hướng về trang login sạch sẽ
         header("Location: /MINISHOP_TRANTHINGOCYEN/admin/login");
         exit();
     }

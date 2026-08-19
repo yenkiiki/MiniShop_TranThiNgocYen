@@ -27,7 +27,7 @@
         </div>
         <div class="card-body">
            <form action="" method="POST" enctype="multipart/form-data">
-
+<?= csrf_field() ?>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="productName" class="form-label fw-bold">Tên sản phẩm <span class="text-danger">*</span></label>

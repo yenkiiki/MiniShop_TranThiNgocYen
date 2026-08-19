@@ -1,5 +1,4 @@
 <?php
-// views/admin/orders/detail.php
 ob_start();
 ?>
 
@@ -7,7 +6,7 @@ ob_start();
     <h1 class="mt-4">Chi tiết đơn hàng</h1>
     <ol class="breadcrumb mb-4">
         <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="index.php?controller=order&action=index">Danh sách đơn hàng</a></li>
+        <li class="breadcrumb-item"><a href="order">Danh sách đơn hàng</a></li>
         <li class="breadcrumb-item active">Chi tiết đơn hàng</li>
     </ol>
 
@@ -19,7 +18,6 @@ ob_start();
     <?php endif; ?>
 
     <?php if ($order): ?>
-        <!-- THÔNG TIN CHUNG ĐƠN HÀNG -->
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
                 <i class="fas fa-info-circle me-1"></i> Thông tin đơn hàng: <strong><?= htmlspecialchars($order->orderCode) ?></strong>
@@ -44,13 +42,12 @@ ob_start();
                         <p><strong>Ghi chú:</strong> <?= nl2br(htmlspecialchars($order->note ?? 'Không có ghi chú')) ?></p>
                     </div>
                 </div>
-                <a href="index.php?controller=order&action=index" class="btn btn-secondary btn-sm">
+                <a href="order" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> Quay lại danh sách
                 </a>
             </div>
         </div>
 
-        <!-- DANH SÁCH CHI TIẾT ĐƠN HÀNG -->
         <div class="card mb-4">
             <div class="card-header">
                 <i class="fas fa-box-open me-1"></i> Danh sách sản phẩm thuộc đơn hàng
@@ -85,7 +82,6 @@ ob_start();
                                                 $productName = $rowP['proname'];
                                             }
                                         } catch (Exception $ex) {
-                                            // Bỏ qua nếu lỗi
                                         }
                                     ?>
                                     <tr>

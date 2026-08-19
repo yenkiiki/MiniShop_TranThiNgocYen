@@ -6,7 +6,7 @@ ob_start();
 <div class="container-fluid px-4">
     <h1 class="mt-4">Quản lý khách hàng</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/MINISHOP_TRANTHINGOCYEN/admin/dashboard">Dashboard</a></li>
         <li class="breadcrumb-item active">Danh sách khách hàng</li>
     </ol>
 
@@ -27,9 +27,7 @@ ob_start();
     <div class="card mb-4">
         <div class="card-header"><i class="fas fa-search me-1"></i> Tìm kiếm & Lọc khách hàng</div>
         <div class="card-body">
-            <form method="GET" class="row g-3">
-                <input type="hidden" name="controller" value="customer">
-                <input type="hidden" name="action" value="index">
+            <form method="GET" action="/MINISHOP_TRANTHINGOCYEN/admin/customer" class="row g-3">
                 <input type="hidden" name="limit" value="<?= $limit ?>">
 
                 <div class="col-md-5">
@@ -45,7 +43,7 @@ ob_start();
                 </div>
                 <div class="col-md-3">
                     <button type="submit" class="btn btn-primary me-2"><i class="fas fa-search"></i> Tìm</button>
-                    <a href="index.php?controller=customer&action=index" class="btn btn-secondary"><i class="fas fa-redo"></i> Làm mới</a>
+                    <a href="/MINISHOP_TRANTHINGOCYEN/admin/customer" class="btn btn-secondary"><i class="fas fa-redo"></i> Làm mới</a>
                 </div>
             </form>
         </div>
@@ -54,7 +52,7 @@ ob_start();
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div><i class="fas fa-users me-1"></i> Danh sách khách hàng</div>
-     <a href="index.php?controller=customer&action=create" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Thêm mới</a>
+            <a href="/MINISHOP_TRANTHINGOCYEN/admin/customer/create" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Thêm mới</a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -88,9 +86,9 @@ ob_start();
                                     </td>
                                     <td><?= htmlspecialchars($customer->createdAt) ?></td>
                                     <td class="text-nowrap">
-                                       <a href="index.php?controller=customer&action=detail&id=<?= $customer->id ?>" class="btn btn-info text-white btn-sm"><i class="fas fa-eye"></i> Xem</a>
-                                     <a href="index.php?controller=customer&action=edit&id=<?= $customer->id ?>" class="btn btn-warning text-white btn-sm"><i class="fas fa-edit"></i> Sửa</a>
-                                        <a href="index.php?controller=customer&action=index&subaction=delete&id=<?= $customer->id ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?');"><i class="fas fa-trash"></i> Xóa</a>
+                                        <a href="/MINISHOP_TRANTHINGOCYEN/admin/customer/detail/<?= $customer->id ?>" class="btn btn-info text-white btn-sm"><i class="fas fa-eye"></i> Xem</a>
+                                        <a href="/MINISHOP_TRANTHINGOCYEN/admin/customer/edit/<?= $customer->id ?>" class="btn btn-warning text-white btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                                        <a href="/MINISHOP_TRANTHINGOCYEN/admin/customer/delete/<?= $customer->id ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?');"><i class="fas fa-trash"></i> Xóa</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -106,9 +104,7 @@ ob_start();
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="d-flex align-items-center">
                     <label class="me-2">Hiển thị:</label>
-                    <form method="GET">
-                        <input type="hidden" name="controller" value="customer">
-                        <input type="hidden" name="action" value="index">
+                    <form method="GET" action="/MINISHOP_TRANTHINGOCYEN/admin/customer">
                         <?php if (!empty($keyword)): ?>
                             <input type="hidden" name="keyword" value="<?= htmlspecialchars($keyword) ?>">
                         <?php endif; ?>
@@ -127,17 +123,17 @@ ob_start();
                     <nav class="mb-0">
                         <ul class="pagination mb-0">
                             <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?controller=customer&action=index&limit=<?= $limit ?>&page=<?= $page - 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Trước</a>
+                                <a class="page-link" href="/MINISHOP_TRANTHINGOCYEN/admin/customer?limit=<?= $limit ?>&page=<?= $page - 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Trước</a>
                             </li>
                             
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                                    <a class="page-link" href="?controller=customer&action=index&limit=<?= $limit ?>&page=<?= $i ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>"><?= $i ?></a>
+                                    <a class="page-link" href="/MINISHOP_TRANTHINGOCYEN/admin/customer?limit=<?= $limit ?>&page=<?= $i ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
                             
                             <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?controller=customer&action=index&limit=<?= $limit ?>&page=<?= $page + 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Sau</a>
+                                <a class="page-link" href="/MINISHOP_TRANTHINGOCYEN/admin/customer?limit=<?= $limit ?>&page=<?= $page + 1 ?><?= !empty($keyword) ? '&keyword=' . urlencode($keyword) : '' ?><?= $searchStatus !== "" ? '&search_status=' . $searchStatus : '' ?>">Sau</a>
                             </li>
                         </ul>
                     </nav>
@@ -151,4 +147,4 @@ ob_start();
 <?php
 $content = ob_get_clean();
 require_once __DIR__ . "/../../../views/admin/layouts/master.php";
-?>
+?>  

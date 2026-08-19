@@ -108,6 +108,7 @@ ob_start();
                                                     <i class="fas fa-edit"></i> Sửa
                                                 </a>
                                                 <form method="POST" action="/MINISHOP_TRANTHINGOCYEN/admin/product/delete"
+                                                <?= csrf_field() ?>
                                                     onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');"
                                                     style="display:inline-block; margin: 0;">
                                                     <input type="hidden" name="id" value="<?= $pro->id ?>">

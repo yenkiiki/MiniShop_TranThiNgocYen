@@ -30,6 +30,7 @@ ob_start();
         <div class="card-body">
             <!-- ĐÃ SỬA: Form action chuẩn URL thân thiện -->
             <form action="/MINISHOP_TRANTHINGOCYEN/admin/brand/create" method="POST" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION["csrf_token"] ?? '') ?>">
 
                 <div class="row mb-3">
