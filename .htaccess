@@ -1,11 +1,14 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /MINISHOP_TRANTHINGOCYEN/
-
-    # Không can thiệp vào các file hoặc thư mục có thật (css, js, ảnh...)
+RewriteBase /MINISHOP_TRANTHINGOCYEN/
+RewriteCond %{REQUEST_URI} ^/MINISHOP_TRANTHINGOCYEN/uploads/ [NC]
+RewriteRule ^ - [L]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^product/search/?$ index.php?area=client&controller=product&action=search [L,QSA]
+    RewriteRule ^category/([^/]+)/?$ index.php?area=client&controller=product&action=category&slug=$1 [L,QSA]
+    RewriteRule ^brand/([^/]+)/?$ index.php?area=client&controller=product&action=brand&slug=$1 [L,QSA]
+RewriteRule ^product/([^/]+)/?$ index.php?area=client&controller=product&action=detail&slug=$1 [L,QSA]
 
-    # Đưa mọi request dạng /admin/login về index.php?path=...
     RewriteRule ^(.*)$ index.php?path=$1 [QSA,L]
 </IfModule>

@@ -77,17 +77,20 @@ ob_start();
                                         <td>
                                             <?php if (!empty($pro->image)): ?>
                                                 <img src="/MINISHOP_TRANTHINGOCYEN/uploads/products/<?= htmlspecialchars($pro->image) ?>"
-                                                    alt="" width="50" height="50" style="object-fit: cover;" class="rounded shadow-sm">
+                                                    alt="product" width="50" height="50" style="object-fit: cover;"
+                                                    class="rounded shadow-sm">
                                             <?php else: ?>
                                                 <span class="text-muted small">Không có ảnh</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-start fw-bold">
-                                            <?= htmlspecialchars($pro->proName ?? $pro->productname ?? '') ?></td>
+                                            <?= htmlspecialchars($pro->proName ?? $pro->productname ?? '') ?>
+                                        </td>
                                         <td><?= htmlspecialchars($pro->cateName ?? $pro->catename ?? '') ?></td>
                                         <td><?= htmlspecialchars($pro->brandName ?? $pro->brandname ?? '') ?></td>
                                         <td>
-                                            <span class="text-danger fw-bold"><?= number_format($pro->price, 0, ',', '.') ?> đ</span>
+                                            <span class="text-danger fw-bold"><?= number_format($pro->price, 0, ',', '.') ?>
+                                                đ</span>
                                         </td>
                                         <td><?= $pro->quantity ?></td>
                                         <td>
@@ -108,14 +111,15 @@ ob_start();
                                                     <i class="fas fa-edit"></i> Sửa
                                                 </a>
                                                 <form method="POST" action="/MINISHOP_TRANTHINGOCYEN/admin/product/delete"
-                                                <?= csrf_field() ?>
                                                     onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');"
                                                     style="display:inline-block; margin: 0;">
+                                                    <?= csrf_field() ?>
                                                     <input type="hidden" name="id" value="<?= $pro->id ?>">
                                                     <button type="submit" class="btn btn-danger btn-sm" title="Xóa">
                                                         <i class="fas fa-trash"></i> Xóa
                                                     </button>
                                                 </form>
+
                                             </div>
                                         </td>
                                     </tr>

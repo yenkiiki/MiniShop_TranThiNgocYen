@@ -1,7 +1,10 @@
 <?php
 namespace DAO;
+
 use Models\ProductImage;
 use Models\Product;
+use Exception;
+
 require_once __DIR__ . "/BaseDAO.php";
 require_once __DIR__ . "/../models/Product.php";
 require_once __DIR__ . "/../models/ProductImage.php";
@@ -13,7 +16,30 @@ class ProductDAO extends BaseDAO
         parent::__construct();
     }
 
-   public function getAll(string $keyword = ""): array
+    private function mapRowToProduct(array $row): Product
+    {
+        $product = new Product();
+        $product->id = (int)($row["id"] ?? 0);
+        $product->categoryId = (int)($row["category_id"] ?? 0);
+        $product->brandId = (int)($row["brand_id"] ?? 0);
+        $product->proName = $row["proname"] ?? '';
+        $product->slug = $row["slug"] ?? '';
+        $product->price = (float)($row["price"] ?? 0);
+        $product->discountPrice = (float)($row["discount_price"] ?? 0);
+        $product->quantity = (int)($row["quantity"] ?? 0);
+        $product->image = $row["image"] ?? '';
+        $product->description = $row["description"] ?? '';
+        $product->status = (int)($row["status"] ?? 0);
+        $product->createdAt = $row["created_at"] ?? null;
+        $product->updatedAt = $row["updated_at"] ?? null;
+        
+        $product->cateName = $row["catename"] ?? 'Chưa phân loại';
+        $product->brandName = $row["brandname"] ?? 'Không có thương hiệu';
+
+        return $product;
+    }
+
+    public function getAll(string $keyword = ""): array
     {
         $list = [];
         try {
@@ -22,14 +48,14 @@ class ProductDAO extends BaseDAO
                     LEFT JOIN categories c ON p.category_id = c.id 
                     LEFT JOIN brands b ON p.brand_id = b.id";
             
-            if (!empty($keyword)) {
+            if (!empty(trim($keyword))) {
                 $sql .= " WHERE p.proname LIKE ? OR p.slug LIKE ?";
             }
             $sql .= " ORDER BY p.id DESC";
 
-            if (!empty($keyword)) {
+            if (!empty(trim($keyword))) {
                 $stmt = $this->prepare($sql);
-                $searchTerm = "%" . $keyword . "%";
+                $searchTerm = "%" . trim($keyword) . "%";
                 $stmt->bind_param("ss", $searchTerm, $searchTerm);
                 $stmt->execute();
                 $result = $stmt->get_result();
@@ -38,26 +64,7 @@ class ProductDAO extends BaseDAO
             }
 
             while ($row = $result->fetch_assoc()) {
-                $product = new Product();
-                $product->id = (int)$row["id"];
-                $product->categoryId = (int)$row["category_id"];
-                $product->brandId = (int)$row["brand_id"];
-                $product->proName = $row["proname"];
-                $product->slug = $row["slug"];
-                $product->price = (float)$row["price"];
-                $product->discountPrice = (float)$row["discount_price"];
-                $product->quantity = (int)$row["quantity"];
-                $product->image = $row["image"];
-                $product->description = $row["description"];
-                $product->status = (int)$row["status"];
-                $product->createdAt = $row["created_at"];
-                $product->updatedAt = $row["updated_at"];
-                
-                // Lấy tên danh mục và thương hiệu từ bảng JOIN
-                $product->cateName = $row["catename"] ?? 'Chưa phân loại';
-                $product->brandName = $row["brandname"] ?? 'Không có thương hiệu';
-
-                $list[] = $product;
+                $list[] = $this->mapRowToProduct($row);
             }
         } catch (Exception $e) {
             throw $e;
@@ -68,27 +75,17 @@ class ProductDAO extends BaseDAO
     public function findById(int $id): ?Product
     {
         try {
-            $sql = "SELECT id, category_id, brand_id, proname, slug, price, discount_price, quantity, image, description, status, created_at, updated_at FROM products WHERE id=?";
+            $sql = "SELECT p.*, c.catename, b.brandname 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    LEFT JOIN brands b ON p.brand_id = b.id 
+                    WHERE p.id = ?";
             $stmt = $this->prepare($sql);
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $result = $stmt->get_result();
             if ($row = $result->fetch_assoc()) {
-                $product = new Product();
-                $product->id = (int)$row["id"];
-                $product->categoryId = (int)$row["category_id"];
-                $product->brandId = (int)$row["brand_id"];
-                $product->proName = $row["proname"];
-                $product->slug = $row["slug"];
-                $product->price = (float)$row["price"];
-                $product->discountPrice = (float)$row["discount_price"];
-                $product->quantity = (int)$row["quantity"];
-                $product->image = $row["image"];
-                $product->description = $row["description"];
-                $product->status = (int)$row["status"];
-                $product->createdAt = $row["created_at"];
-                $product->updatedAt = $row["updated_at"];
-                return $product;
+                return $this->mapRowToProduct($row);
             }
         } catch (Exception $e) {
             throw $e;
@@ -96,7 +93,7 @@ class ProductDAO extends BaseDAO
         return null;
     }
 
-public function insert(Product $product): int
+    public function insert(Product $product): int
     {
         try {
             $sql = "INSERT INTO products(category_id, brand_id, proname, slug, price, discount_price, quantity, image, description, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -115,13 +112,14 @@ public function insert(Product $product): int
                 $product->status
             );
             if ($stmt->execute()) {
-                return $stmt->insert_id; // Trả về ID tự tăng của sản phẩm vừa thêm
+                return $stmt->insert_id;
             }
             return 0;
         } catch (Exception $e) {
             throw $e;
         }
     }
+
     public function update(Product $product): bool
     {
         try {
@@ -159,7 +157,6 @@ public function insert(Product $product): int
         }
     }
 
-    // --- Xử lý bảng product_images ---
     public function getImagesByProductId(int $productId): array
     {
         $list = [];
@@ -207,6 +204,7 @@ public function insert(Product $product): int
             throw $e;
         }
     }
+
     public function countAll(): int
     {
         try {
@@ -225,34 +223,25 @@ public function insert(Product $product): int
     {
         $list = [];
         try {
-            $sql = "SELECT id, category_id, brand_id, proname, slug, price, discount_price, quantity, image, description, status, created_at, updated_at FROM products ORDER BY id DESC LIMIT ?";
+            $sql = "SELECT p.*, c.catename, b.brandname 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    LEFT JOIN brands b ON p.brand_id = b.id 
+                    ORDER BY p.id DESC LIMIT ?";
             $stmt = $this->prepare($sql);
             $stmt->bind_param("i", $limit);
             $stmt->execute();
             $result = $stmt->get_result();
             while ($row = $result->fetch_assoc()) {
-                $product = new Product();
-                $product->id = (int)$row["id"];
-                $product->categoryId = (int)$row["category_id"];
-                $product->brandId = (int)$row["brand_id"];
-                $product->proName = $row["proname"];
-                $product->slug = $row["slug"];
-                $product->price = (float)$row["price"];
-                $product->discountPrice = (float)$row["discount_price"];
-                $product->quantity = (int)$row["quantity"];
-                $product->image = $row["image"];
-                $product->description = $row["description"];
-                $product->status = (int)$row["status"];
-                $product->createdAt = $row["created_at"];
-                $product->updatedAt = $row["updated_at"];
-                $list[] = $product;
+                $list[] = $this->mapRowToProduct($row);
             }
         } catch (Exception $e) {
             throw $e;
         }
         return $list;
     }
-  public function getPage(int $limit, int $offset, string $keyword = ""): array
+
+    public function getPage(int $limit, int $offset, string $keyword = ""): array
     {
         $list = [];
         try {
@@ -261,7 +250,7 @@ public function insert(Product $product): int
                     LEFT JOIN categories c ON p.category_id = c.id 
                     LEFT JOIN brands b ON p.brand_id = b.id";
             
-            if (!empty($keyword)) {
+            if (!empty(trim($keyword))) {
                 $sql .= " WHERE p.proname LIKE ? OR p.slug LIKE ?";
             }
             
@@ -269,7 +258,7 @@ public function insert(Product $product): int
             
             $stmt = $this->prepare($sql);
             
-            if (!empty($keyword)) {
+            if (!empty(trim($keyword))) {
                 $searchTerm = "%" . trim($keyword) . "%";
                 $stmt->bind_param("ssii", $searchTerm, $searchTerm, $limit, $offset);
             } else {
@@ -280,37 +269,20 @@ public function insert(Product $product): int
             $result = $stmt->get_result();
 
             while ($row = $result->fetch_assoc()) {
-                $product = new Product();
-                $product->id = (int)$row["id"];
-                $product->categoryId = (int)$row["category_id"];
-                $product->brandId = (int)$row["brand_id"];
-                $product->proName = $row["proname"];
-                $product->slug = $row["slug"];
-                $product->price = (float)$row["price"];
-                $product->discountPrice = (float)$row["discount_price"];
-                $product->quantity = (int)$row["quantity"];
-                $product->image = $row["image"];
-                $product->description = $row["description"];
-                $product->status = (int)$row["status"];
-                $product->createdAt = $row["created_at"];
-                $product->updatedAt = $row["updated_at"];
-                
-                $product->cateName = $row["catename"] ?? 'Chưa phân loại';
-                $product->brandName = $row["brandname"] ?? 'Không có thương hiệu';
-
-                $list[] = $product;
+                $list[] = $this->mapRowToProduct($row);
             }
         } catch (Exception $e) {
             throw $e;
         }
         return $list;
     }
+
     public function count(string $table = "products", string $column = "proname", string $keyword = ""): int
     {
         try {
             $sql = "SELECT COUNT(*) as total FROM products p";
             
-            if (!empty($keyword)) {
+            if (!empty(trim($keyword))) {
                 $sql .= " WHERE p.proname LIKE ? OR p.slug LIKE ?";
                 $stmt = $this->prepare($sql);
                 $searchTerm = "%" . trim($keyword) . "%";
@@ -330,7 +302,6 @@ public function insert(Product $product): int
         return 0;
     }
 
-    // Lấy danh sách sản phẩm giảm giá
     public function getDiscountProducts(int $limit = 8): array
     {
         $list = [];
@@ -347,23 +318,7 @@ public function insert(Product $product): int
             $result = $stmt->get_result();
 
             while ($row = $result->fetch_assoc()) {
-                $product = new Product();
-                $product->id = (int)$row["id"];
-                $product->categoryId = (int)$row["category_id"];
-                $product->brandId = (int)$row["brand_id"];
-                $product->proName = $row["proname"];
-                $product->slug = $row["slug"];
-                $product->price = (float)$row["price"];
-                $product->discountPrice = (float)$row["discount_price"];
-                $product->quantity = (int)$row["quantity"];
-                $product->image = $row["image"];
-                $product->description = $row["description"];
-                $product->status = (int)$row["status"];
-                $product->createdAt = $row["created_at"];
-                $product->updatedAt = $row["updated_at"];
-                $product->cateName = $row["catename"] ?? 'Chưa phân loại';
-                $product->brandName = $row["brandname"] ?? 'Không có thương hiệu';
-                $list[] = $product;
+                $list[] = $this->mapRowToProduct($row);
             }
         } catch (Exception $e) {
             throw $e;
@@ -371,7 +326,6 @@ public function insert(Product $product): int
         return $list;
     }
 
-    // Lấy danh sách sản phẩm mới nhất
     public function getNewProducts(int $limit = 4): array
     {
         $list = [];
@@ -387,27 +341,277 @@ public function insert(Product $product): int
             $result = $stmt->get_result();
 
             while ($row = $result->fetch_assoc()) {
-                $product = new Product();
-                $product->id = (int)$row["id"];
-                $product->categoryId = (int)$row["category_id"];
-                $product->brandId = (int)$row["brand_id"];
-                $product->proName = $row["proname"];
-                $product->slug = $row["slug"];
-                $product->price = (float)$row["price"];
-                $product->discountPrice = (float)$row["discount_price"];
-                $product->quantity = (int)$row["quantity"];
-                $product->image = $row["image"];
-                $product->description = $row["description"];
-                $product->status = (int)$row["status"];
-                $product->createdAt = $row["created_at"];
-                $product->updatedAt = $row["updated_at"];
-                $product->cateName = $row["catename"] ?? 'Chưa phân loại';
-                $product->brandName = $row["brandname"] ?? 'Không có thương hiệu';
-                $list[] = $product;
+                $list[] = $this->mapRowToProduct($row);
             }
         } catch (Exception $e) {
             throw $e;
         }
         return $list;
+    }
+
+    public function getByCategory(string $slug): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT p.*, c.catename, b.brandname 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    LEFT JOIN brands b ON p.brand_id = b.id 
+                    WHERE c.slug = ? 
+                    ORDER BY p.id DESC";
+            
+            $stmt = $this->prepare($sql);
+            $stmt->bind_param("s", $slug);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $list[] = $this->mapRowToProduct($row);
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return $list;
+    }
+
+    public function getByBrand(string $slug): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT p.*, c.catename, b.brandname 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    LEFT JOIN brands b ON p.brand_id = b.id 
+                    WHERE b.slug = ? 
+                    ORDER BY p.id DESC";
+            
+            $stmt = $this->prepare($sql);
+            $stmt->bind_param("s", $slug);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $list[] = $this->mapRowToProduct($row);
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return $list;
+    }
+
+    public function findBySlug(string $slug): ?Product
+    {
+        try {
+            $sql = "SELECT p.*, c.catename, b.brandname 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    LEFT JOIN brands b ON p.brand_id = b.id 
+                    WHERE p.slug = ?";
+            $stmt = $this->prepare($sql);
+            $stmt->bind_param("s", $slug);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                return $this->mapRowToProduct($row);
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return null;
+    }
+
+    public function getRelatedProducts(int $categoryId, int $currentId, int $limit = 4): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT p.*, c.catename, b.brandname 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    LEFT JOIN brands b ON p.brand_id = b.id 
+                    WHERE p.category_id = ? AND p.id != ? 
+                    ORDER BY p.id DESC LIMIT ?";
+            $stmt = $this->prepare($sql);
+            $stmt->bind_param("iii", $categoryId, $currentId, $limit);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $list[] = $this->mapRowToProduct($row);
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return $list;
+    }
+
+    public function addReview(int $productId, string $fullname, int $rating, string $comment): bool
+    {
+        try {
+            $sql = "INSERT INTO product_reviews (product_id, fullname, rating, comment) VALUES (?, ?, ?, ?)";
+            $stmt = $this->prepare($sql);
+            $stmt->bind_param("isis", $productId, $fullname, $rating, $comment);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function getReviewsByProductId(int $productId): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT id, product_id, fullname, rating, comment, created_at FROM product_reviews WHERE product_id = ? ORDER BY id DESC";
+            $stmt = $this->prepare($sql);
+            $stmt->bind_param("i", $productId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            while ($row = $result->fetch_object()) { 
+                $list[] = $row;
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return $list;
+    }
+
+    public function getFiltered(array $filters = [], int $limit = 8, int $offset = 0): array
+    {
+        $list = [];
+        try {
+            $sql = "SELECT p.*, c.catename, b.brandname FROM products p LEFT JOIN categories c ON p.category_id = c.id LEFT JOIN brands b ON p.brand_id = b.id WHERE 1=1";
+            $params = [];
+            $types = "";
+
+            if (!empty(trim($filters['keyword'] ?? ''))) {
+                $sql .= " AND (p.proname LIKE ? OR p.slug LIKE ?)";
+                $searchTerm = "%" . trim($filters['keyword']) . "%";
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "ss";
+            }
+
+            if (!empty($filters['category_id'])) {
+                $sql .= " AND p.category_id = ?";
+                $params[] = (int)$filters['category_id'];
+                $types .= "i";
+            } elseif (!empty(trim($filters['category_slug'] ?? ''))) {
+                $sql .= " AND c.slug = ?";
+                $params[] = trim($filters['category_slug']);
+                $types .= "s";
+            }
+
+            if (!empty($filters['brand_id'])) {
+                $sql .= " AND p.brand_id = ?";
+                $params[] = (int)$filters['brand_id'];
+                $types .= "i";
+            } elseif (!empty(trim($filters['brand_slug'] ?? ''))) {
+                $sql .= " AND b.slug = ?";
+                $params[] = trim($filters['brand_slug']);
+                $types .= "s";
+            }
+
+            if (isset($filters['min_price']) && $filters['min_price'] !== '' && is_numeric($filters['min_price'])) {
+                $sql .= " AND p.price >= ?";
+                $params[] = (float)$filters['min_price'];
+                $types .= "d";
+            }
+
+            if (isset($filters['max_price']) && $filters['max_price'] !== '' && is_numeric($filters['max_price'])) {
+                $sql .= " AND p.price <= ?";
+                $params[] = (float)$filters['max_price'];
+                $types .= "d";
+            }
+
+            $sort = $filters['sort'] ?? 'latest';
+            if ($sort === 'price_asc') {
+                $sql .= " ORDER BY p.price ASC";
+            } elseif ($sort === 'price_desc') {
+                $sql .= " ORDER BY p.price DESC";
+            } elseif ($sort === 'name_asc') {
+                $sql .= " ORDER BY p.proname ASC";
+            } else {
+                $sql .= " ORDER BY p.id DESC";
+            }
+
+            $sql .= " LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+            $types .= "ii";
+
+            $stmt = $this->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($types, ...$params);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
+            while ($row = $result->fetch_assoc()) {
+                $list[] = $this->mapRowToProduct($row);
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return $list;
+    }
+
+    public function countFiltered(array $filters = []): int
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM products p LEFT JOIN categories c ON p.category_id = c.id LEFT JOIN brands b ON p.brand_id = b.id WHERE 1=1";
+            $params = [];
+            $types = "";
+
+            if (!empty(trim($filters['keyword'] ?? ''))) {
+                $sql .= " AND (p.proname LIKE ? OR p.slug LIKE ?)";
+                $searchTerm = "%" . trim($filters['keyword']) . "%";
+                $params[] = $searchTerm;
+                $params[] = $searchTerm;
+                $types .= "ss";
+            }
+
+            if (!empty($filters['category_id'])) {
+                $sql .= " AND p.category_id = ?";
+                $params[] = (int)$filters['category_id'];
+                $types .= "i";
+            } elseif (!empty(trim($filters['category_slug'] ?? ''))) {
+                $sql .= " AND c.slug = ?";
+                $params[] = trim($filters['category_slug']);
+                $types .= "s";
+            }
+
+            if (!empty($filters['brand_id'])) {
+                $sql .= " AND p.brand_id = ?";
+                $params[] = (int)$filters['brand_id'];
+                $types .= "i";
+            } elseif (!empty(trim($filters['brand_slug'] ?? ''))) {
+                $sql .= " AND b.slug = ?";
+                $params[] = trim($filters['brand_slug']);
+                $types .= "s";
+            }
+
+            if (isset($filters['min_price']) && $filters['min_price'] !== '' && is_numeric($filters['min_price'])) {
+                $sql .= " AND p.price >= ?";
+                $params[] = (float)$filters['min_price'];
+                $types .= "d";
+            }
+
+            if (isset($filters['max_price']) && $filters['max_price'] !== '' && is_numeric($filters['max_price'])) {
+                $sql .= " AND p.price <= ?";
+                $params[] = (float)$filters['max_price'];
+                $types .= "d";
+            }
+
+            $stmt = $this->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($types, ...$params);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                return (int)$row['total'];
+            }
+        } catch (Exception $e) {
+            throw $e;
+        }
+        return 0;
     }
 }

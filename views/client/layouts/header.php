@@ -1,8 +1,8 @@
 <?php
 use Composers\HeaderComposer;
 $headerData = HeaderComposer::compose();
-$categories = $headerData['categories'];
-$brands = $headerData['brands'];
+$categories = $headerData['categories'] ?? [];
+$brands = $headerData['brands'] ?? [];
 ?>
 
 <header class="bg-light border-bottom sticky-top">
@@ -22,47 +22,44 @@ $brands = $headerData['brands'];
                         <a class="nav-link" href="<?= BASE_URL ?>">Trang chủ</a>
                     </li>
 
-      <!-- Phần hiển thị Danh mục -->
-<li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Danh mục</a>
-    <ul class="dropdown-menu">
-        <?php foreach ($categories as $category): ?>
-            <?php 
-                // Xử lý linh hoạt: Nếu là Object thì dùng ->, nếu là Array thì dùng ['']
-                $catId = is_object($category) ? $category->id : $category['id'];
-                $catName = is_object($category) ? $category->cateName : $category['cateName'];
-            ?>
-            <li>
-                <a class="dropdown-item" href="<?= BASE_URL ?>product?category_id=<?= $catId ?>">
-                    <?= htmlspecialchars($catName) ?>
-                </a>
-            </li>
-        <?php endforeach; ?>
-    </ul>
-</li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Danh mục</a>
+                        <ul class="dropdown-menu">
+                            <?php foreach ($categories as $category): ?>
+                                <?php
+                                $slug = is_object($category) ? ($category->slug ?? '') : ($category['slug'] ?? '');
+                                $catName = is_object($category) ? ($category->catename ?? $category->cateName ?? '') : ($category['catename'] ?? $category['cateName'] ?? '');
+                                ?>
+                                <li>
+                                    <a class="dropdown-item" href="<?= BASE_URL ?>product?category_slug=<?= $slug ?>">
+                                        <?= htmlspecialchars($catName) ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </li>
 
-<!-- Phần hiển thị Thương hiệu -->
-<li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Thương hiệu</a>
-    <ul class="dropdown-menu">
-        <?php foreach ($brands as $brand): ?>
-            <?php 
-                // Xử lý linh hoạt: Nếu là Object thì dùng ->, nếu là Array thì dùng ['']
-                $brandId = is_object($brand) ? $brand->id : $brand['id'];
-                $brandName = is_object($brand) ? $brand->brandName : $brand['brandName'];
-            ?>
-            <li>
-                <a class="dropdown-item" href="<?= BASE_URL ?>product?brand_id=<?= $brandId ?>">
-                    <?= htmlspecialchars($brandName) ?>
-                </a>
-            </li>
-        <?php endforeach; ?>
-    </ul>
-</li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Thương hiệu</a>
+                        <ul class="dropdown-menu">
+                            <?php foreach ($brands as $brand): ?>
+                                <?php
+                                $brandSlug = is_object($brand) ? ($brand->slug ?? '') : ($brand['slug'] ?? '');
+                                $brandName = is_object($brand) ? ($brand->brandName ?? '') : ($brand['brandName'] ?? '');
+                                ?>
+                                <li>
+                                    <a class="dropdown-item" href="<?= BASE_URL ?>product?brand_slug=<?= $brandSlug ?>">
+                                        <?= htmlspecialchars($brandName) ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </li>
                 </ul>
 
                 <form class="d-flex me-3" action="<?= BASE_URL ?>product/search" method="GET">
-                    <input class="form-control me-2" type="search" name="keyword" placeholder="Tìm sản phẩm..." aria-label="Search">
+                    <input class="form-control me-2" type="search" name="keyword" placeholder="Tìm sản phẩm..."
+                        aria-label="Search">
                     <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
                 </form>
 
