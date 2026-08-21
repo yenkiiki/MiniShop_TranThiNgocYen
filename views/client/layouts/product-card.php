@@ -7,10 +7,10 @@
             <?= number_format($product->discountPrice) ?> đ
         </p>
         <div class="d-flex justify-content-end gap-2">
-      <a href="product/<?= $product->slug ?>" class="btn btn-outline-secondary btn-sm" title="Xem chi tiết">
-    <i class="bi bi-eye"></i>
-</a>
-            <button type="button" class="btn btn-primary btn-sm" title="Mua hàng">
+            <a href="product/<?= $product->slug ?>" class="btn btn-outline-secondary btn-sm" title="Xem chi tiết">
+                <i class="bi bi-eye"></i>
+            </a>
+            <button type="button" class="btn btn-primary btn-sm btn-add-cart" data-productid="<?= $product->id ?>" title="Thêm vào giỏ hàng">
                 <i class="bi bi-cart-plus"></i>
             </button>
         </div>

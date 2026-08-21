@@ -69,8 +69,9 @@ $brands = $headerData['brands'] ?? [];
                     </a>
                     <a href="<?= BASE_URL ?>cart" class="nav-link text-dark position-relative">
                         <i class="bi bi-cart3 fs-4"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            0
+                        <span id="cartCount"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <?= isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart'], 'quantity')) : 0 ?>
                         </span>
                     </a>
                 </div>
