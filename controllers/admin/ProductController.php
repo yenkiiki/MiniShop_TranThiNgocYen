@@ -4,8 +4,10 @@ namespace Controllers\Admin;
 use DAO\ProductDAO;
 use DAO\CategoryDAO;
 use DAO\BrandDAO;
+use DAO\ProductVariantDAO;
 use Models\Product;
 use Models\ProductImage;
+use Models\ProductVariant;
 use Exception;
 
 class ProductController
@@ -13,12 +15,14 @@ class ProductController
     private $productDAO;
     private $categoryDAO;
     private $brandDAO;
+    private $variantDAO;
 
     public function __construct()
     {
         $this->productDAO = new ProductDAO();
         $this->categoryDAO = new CategoryDAO();
         $this->brandDAO = new BrandDAO();
+        $this->variantDAO = new ProductVariantDAO();
     }
 
     // 1. Hiển thị danh sách sản phẩm
@@ -109,6 +113,7 @@ public function detail() {
         }
 
         $productImages = $this->productDAO->getImagesByProductId($id);
+        $variants = $this->variantDAO->getByProductId($id);
         $pageTitle = "Chi tiết sản phẩm - Mini Shop";
 
         // CHỈ gọi file view. Trong file view sẽ tự nhúng master.php
@@ -206,6 +211,7 @@ public function detail() {
                     $productId = $this->productDAO->insert($product);
 
                     if ($productId) {
+                        $galleryImages = [];
                         if (isset($_FILES["images"]) && !empty($_FILES["images"]["name"][0])) {
                             $uploadDirGallery = __DIR__ . "/../../uploads/products/";
                             if (!is_dir($uploadDirGallery))
@@ -222,11 +228,18 @@ public function detail() {
                                         $productImage = new ProductImage();
                                         $productImage->productId = $productId;
                                         $productImage->image = $subImageName;
-                                        $productImage->sortOrder = 0;
+                                        $productImage->sortOrder = $key;
                                         $this->productDAO->insertImage($productImage);
+                                        $galleryImages[] = $subImageName;
                                     }
                                 }
                             }
+                        }
+
+                        // Đồng bộ biến thể sản phẩm (Variant 1 -> Main Image, Variant 2 -> Sub Image 1, Variant 3 -> Sub Image 2,...)
+                        $variantsInput = $_POST['variants'] ?? [];
+                        if (!empty($variantsInput)) {
+                            $this->variantDAO->syncVariants($productId, $variantsInput, $image, $galleryImages);
                         }
 
                         header("Location: /MINISHOP_TRANTHINGOCYEN/admin/product/index?msg=add_success");
@@ -420,6 +433,19 @@ public function detail() {
                         }
                     }
 
+                    // Lấy toàn bộ ảnh phụ sau khi cập nhật
+                    $currentSubImages = $this->productDAO->getImagesByProductId($id);
+                    $allGallery = [];
+                    foreach ($currentSubImages as $cImg) {
+                        $allGallery[] = $cImg->image;
+                    }
+
+                    // Đồng bộ danh sách biến thể (Variant 1 -> Main Image, Variant 2 -> Sub Image 1, Variant 3 -> Sub Image 2,...)
+                    $variantsInput = $_POST['variants'] ?? [];
+                    if (isset($_POST['variants'])) {
+                        $this->variantDAO->syncVariants($id, $variantsInput, $image, $allGallery);
+                    }
+
                     header("Location: /MINISHOP_TRANTHINGOCYEN/admin/product/index?msg=update_success");
                     exit();
 
@@ -429,6 +455,7 @@ public function detail() {
             }
         }
 
+        $variants = $this->variantDAO->getByProductId($id);
         $pageTitle = "Cập nhật sản phẩm - Mini Shop";
         require_once __DIR__ . '/../../views/admin/products/edit.php';
     }

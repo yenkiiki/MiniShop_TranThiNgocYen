@@ -18,23 +18,43 @@
         </div>
     </main>
     <?php include __DIR__ . "/footer.php"; ?>
-    <script src="<?= BASE_URL ?>assets/bootstrap.bundle.min.js"></script>
-    <script>const BASE_URL = "<?= BASE_URL ?>";
-        const CSRF_TOKEN = "<?= $_SESSION['csrf_token'] ?? '' ?>";</script>
 
-    <script src="<?= BASE_URL ?>/public/js/cart.js"></script>
+    <script src="<?= BASE_URL ?>assets/bootstrap.bundle.min.js"></script>
+    <script>
+        const BASE_URL = "<?= rtrim(BASE_URL, '/') ?>/";
+        const CSRF_TOKEN = "<?= $_SESSION['csrf_token'] ?? '' ?>";
+        const IS_LOGGED_IN = <?= isset($_SESSION['client_user']) ? 'true' : 'false' ?>;
+    </script>
+
+    <script src="<?= BASE_URL ?>public/js/cart.js?v=<?= time() ?>"></script>
+
     <!-- Bootstrap Toast Notification -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
-    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header bg-success text-white">
-            <strong class="me-auto">MINISHOP</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body" id="toastMessage">
-            Đã thêm sản phẩm thành công!
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <strong class="me-auto">MINISHOP</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                Đã thêm sản phẩm thành công!
+            </div>
         </div>
     </div>
-</div>
+
+    <?php if (!empty($_SESSION['cart_message'])): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const toastEl = document.getElementById('liveToast');
+                const toastMsg = document.getElementById('toastMessage');
+                if (toastEl && toastMsg) {
+                    toastMsg.textContent = <?= json_encode($_SESSION['cart_message']) ?>;
+                    const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+                    toast.show();
+                }
+            });
+        </script>
+        <?php unset($_SESSION['cart_message']); ?>
+    <?php endif; ?>
 </body>
 
 </html>

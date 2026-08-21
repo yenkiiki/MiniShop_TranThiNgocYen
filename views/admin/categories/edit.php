@@ -6,8 +6,8 @@
     <div class="container-fluid px-4">
         <h1 class="mt-4">Quản lý danh mục</h1>
         <ol class="breadcrumb mb-4">
-            <li class="breadcrumb-item"><a href="index.php?controller=dashboard&action=index">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="index.php?controller=category&action=index">Danh mục sản phẩm</a></li>
+            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/category">Danh mục sản phẩm</a></li>
             <li class="breadcrumb-item active">Cập nhật</li>
         </ol>
 
@@ -17,7 +17,7 @@
                     <i class="fas fa-edit me-1"></i>
                     Cập nhật danh mục
                 </div>
-                <a href="index.php?controller=category&action=index" class="btn btn-secondary btn-sm">
+                <a href="<?= BASE_URL ?>admin/category" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
             </div>
@@ -33,7 +33,7 @@
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" enctype="multipart/form-data" action="index.php?controller=category&action=edit&id=<?= $category->id ?>">
+                <form method="POST" enctype="multipart/form-data" action="<?= BASE_URL ?>admin/category/edit?id=<?= $category->id ?>">
                     <?= csrf_field() ?>
                     <!-- Tên danh mục -->
                     <div class="mb-3">
@@ -52,7 +52,7 @@
                         <label class="form-label fw-bold">Hình ảnh danh mục</label>
                         <div class="mb-2">
                             <?php if (!empty($category->image)): ?>
-                                <img src="/MiniShop_TranThiNgocYen/uploads/categories/<?= htmlspecialchars($category->image) ?>" 
+                                <img src="<?= BASE_URL ?>uploads/categories/<?= htmlspecialchars($category->image) ?>" 
                                     alt="<?= htmlspecialchars($category->cateName) ?>" 
                                     class="img-thumbnail rounded shadow-sm" 
                                     style="width: 80px; height: 80px; object-fit: cover;">
@@ -88,7 +88,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Cập nhật
                         </button>
-                        <a href="index.php?controller=category&action=index" class="btn btn-secondary">
+                        <a href="<?= BASE_URL ?>admin/category" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Quay lại
                         </a>
                     </div>

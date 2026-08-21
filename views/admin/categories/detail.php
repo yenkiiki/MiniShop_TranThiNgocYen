@@ -6,8 +6,8 @@ ob_start();
 <div class="container-fluid px-4">
     <h1 class="mt-4">Quản lý danh mục</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="index.php?controller=dashboard&action=index">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="index.php?controller=category&action=index">Danh mục sản phẩm</a></li>
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/category">Danh mục sản phẩm</a></li>
         <li class="breadcrumb-item active">Chi tiết</li>
     </ol>
 
@@ -17,7 +17,7 @@ ob_start();
                 <i class="fas fa-eye me-1"></i>
                 Chi tiết thông tin danh mục
             </div>
-            <a href="index.php?controller=category&action=index" class="btn btn-secondary btn-sm">
+            <a href="<?= BASE_URL ?>admin/category" class="btn btn-secondary btn-sm">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
         </div>
@@ -40,7 +40,7 @@ ob_start();
                         <th class="bg-light">Hình ảnh:</th>
                         <td>
                             <?php if (!empty($category->image)): ?>
-                                <img src="/MiniShop_TranThiNgocYen/uploads/categories/<?= htmlspecialchars($category->image) ?>" 
+                                <img src="<?= BASE_URL ?>uploads/categories/<?= htmlspecialchars($category->image) ?>" 
                                      alt="Image" 
                                      style="max-height: 100px; width: 100px; object-fit: cover;" 
                                      class="img-thumbnail rounded shadow-sm">
@@ -76,10 +76,10 @@ ob_start();
 
             <!-- Các nút thao tác -->
             <div class="mt-4">
-                <a href="index.php?controller=category&action=edit&id=<?= $category->id ?>" class="btn btn-warning text-white">
+                <a href="<?= BASE_URL ?>admin/category/edit?id=<?= $category->id ?>" class="btn btn-warning text-white">
                     <i class="fas fa-edit"></i> Sửa
                 </a>
-                <a href="index.php?controller=category&action=index" class="btn btn-secondary">
+                <a href="<?= BASE_URL ?>admin/category" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Quay lại danh sách
                 </a>
             </div>

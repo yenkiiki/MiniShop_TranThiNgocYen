@@ -5,8 +5,6 @@
     # Bỏ qua cho thư mục uploads
     RewriteCond %{REQUEST_URI} ^/MINISHOP_TRANTHINGOCYEN/uploads/ [NC]
     RewriteRule ^ - [L]
-
-    # --- THÊM 2 DÒNG NÀY ĐỂ BẢO VỆ CÁC FILE THẬT (CSS, JS, ẢNH...) ---
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
 
@@ -15,7 +13,7 @@
     RewriteRule ^brand/([^/]+)/?$ index.php?area=client&controller=product&action=brand&slug=$1 [L,QSA]
     RewriteRule ^product/([^/]+)/?$ index.php?area=client&controller=product&action=detail&slug=$1 [L,QSA]
 
-    # Rule cuối cùng cũng phải đi kèm điều kiện không phải file/thư mục thực tế
+
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php?path=$1 [QSA,L]

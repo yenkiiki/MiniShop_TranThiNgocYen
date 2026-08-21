@@ -118,6 +118,8 @@ CREATE TABLE `orders` (
   `user_id` int(11) DEFAULT NULL,
   `order_code` varchar(30) NOT NULL,
   `total_amount` decimal(12,2) DEFAULT 0.00,
+  `shipping_fee` decimal(12,2) DEFAULT 0.00,
+  `payment_method` varchar(50) DEFAULT 'COD',
   `note` text DEFAULT NULL,
   `status` tinyint(4) DEFAULT 0,
   `created_at` datetime DEFAULT current_timestamp(),
@@ -128,12 +130,12 @@ CREATE TABLE `orders` (
 -- Đang đổ dữ liệu cho bảng `orders`
 --
 
-INSERT INTO `orders` (`id`, `customer_id`, `user_id`, `order_code`, `total_amount`, `note`, `status`, `created_at`, `updated_at`) VALUES
-(1, 1, 2, 'ORD20260101', 2990000.00, 'Đơn hàng giao gấp', 1, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
-(2, 2, 2, 'ORD20260102', 2400000.00, 'Khách hẹn lấy chiều', 1, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
-(3, 3, 3, 'ORD20260103', 2850000.00, '', 0, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
-(4, 4, NULL, 'ORD20260104', 8900000.00, 'Đơn tự đặt online', 0, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
-(5, 5, 3, 'ORD20260105', 500000.00, '', 2, '2026-08-05 13:48:10', '2026-08-05 13:48:10');
+INSERT INTO `orders` (`id`, `customer_id`, `user_id`, `order_code`, `total_amount`, `shipping_fee`, `payment_method`, `note`, `status`, `created_at`, `updated_at`) VALUES
+(1, 1, 2, 'ORD20260101', 2990000.00, 0.00, 'COD', 'Đơn hàng giao gấp', 1, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
+(2, 2, 2, 'ORD20260102', 2400000.00, 0.00, 'Chuyển khoản', 'Khách hẹn lấy chiều', 1, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
+(3, 3, 3, 'ORD20260103', 2850000.00, 30000.00, 'COD', '', 0, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
+(4, 4, NULL, 'ORD20260104', 8900000.00, 0.00, 'Chuyển khoản', 'Đơn tự đặt online', 0, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
+(5, 5, 3, 'ORD20260105', 530000.00, 30000.00, 'COD', '', 2, '2026-08-05 13:48:10', '2026-08-05 13:48:10');
 
 -- --------------------------------------------------------
 
@@ -219,6 +221,34 @@ INSERT INTO `product_images` (`id`, `product_id`, `image`, `sort_order`, `create
 (3, 2, 'blackwidow_front.jpg', 1, '2026-08-05 13:48:09'),
 (4, 3, 'hs80_side.jpg', 1, '2026-08-05 13:48:09'),
 (5, 4, 'xg27aq_back.jpg', 1, '2026-08-05 13:48:09');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `sales`
+--
+
+CREATE TABLE `sales` (
+  `id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `discount_percent` int(11) NOT NULL DEFAULT 0,
+  `sale_price` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `status` tinyint(4) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `sales`
+--
+
+INSERT INTO `sales` (`id`, `product_id`, `discount_percent`, `sale_price`, `start_date`, `end_date`, `description`, `status`, `created_at`, `updated_at`) VALUES
+(1, 1, 20, 2800000.00, '2026-08-01 00:00:00', '2026-08-31 23:59:59', 'Flash Sale Mùa Hè 20%', 1, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
+(2, 2, 15, 2380000.00, '2026-08-01 00:00:00', '2026-08-31 23:59:59', 'Giảm giá hot trong tuần 15%', 1, '2026-08-05 13:48:10', '2026-08-05 13:48:10'),
+(3, 3, 30, 2240000.00, '2026-08-01 00:00:00', '2026-08-31 23:59:59', 'Xả kho siêu ưu đãi 30%', 1, '2026-08-05 13:48:10', '2026-08-05 13:48:10');
 
 -- --------------------------------------------------------
 
@@ -309,6 +339,13 @@ ALTER TABLE `product_images`
   ADD KEY `fk_product_images_products` (`product_id`);
 
 --
+-- Chỉ mục cho bảng `sales`
+--
+ALTER TABLE `sales`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_sales_products` (`product_id`);
+
+--
 -- Chỉ mục cho bảng `users`
 --
 ALTER TABLE `users`
@@ -362,6 +399,12 @@ ALTER TABLE `product_images`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- AUTO_INCREMENT cho bảng `sales`
+--
+ALTER TABLE `sales`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
@@ -397,6 +440,12 @@ ALTER TABLE `products`
 --
 ALTER TABLE `product_images`
   ADD CONSTRAINT `fk_product_images_products` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Các ràng buộc cho bảng `sales`
+--
+ALTER TABLE `sales`
+  ADD CONSTRAINT `fk_sales_products` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

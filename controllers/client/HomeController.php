@@ -17,11 +17,29 @@ class HomeController
 
     public function index()
     {
-        $pageTitle = "Trang chủ - MINISHOP";
+        $pageTitle = "MINISHOP - Cửa hàng phụ kiện & thiết bị công nghệ chính hãng";
         
         $categories = $this->categoryDAO->getAll();
         $discountProducts = $this->productDAO->getDiscountProducts(8);
-        $newProducts = $this->productDAO->getNewProducts(4);
+        $newProducts = $this->productDAO->getNewProducts(8);
+
+        // Lấy thông tin và số lượng sản phẩm cho từng danh mục
+        $categoryRows = [];
+        foreach ($categories as $category) {
+            $totalInCat = $this->productDAO->countFiltered(['category_id' => $category->id]);
+            $categoryRows[] = [
+                'category' => $category,
+                'totalCount' => $totalInCat
+            ];
+        }
+
+        require_once __DIR__ . "/../../dao/BrandDAO.php";
+        $brandDAO = new \DAO\BrandDAO();
+        $brands = $brandDAO->getAll();
+
+        require_once __DIR__ . "/../../dao/ReviewDAO.php";
+        $reviewDAO = new \DAO\ReviewDAO();
+        $featuredReviews = $reviewDAO->getByProductId(0); // If 0 returns all, or we can fetch top reviews
 
         ob_start();
         require __DIR__ . "/../../views/client/home/index.php";

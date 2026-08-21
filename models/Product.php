@@ -14,10 +14,13 @@ class Product {
     public int $status;
     public string $createdAt;
     public string $updatedAt;
-public ?string $cateName = null;
+    public ?string $cateName = null;
     public ?string $brandName = null;
+    public array $variants = [];
+
     public function __construct() {
         $this->quantity = 0;
         $this->status = 1;
+        $this->variants = [];
     }
 }

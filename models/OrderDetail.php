@@ -8,6 +8,8 @@ class OrderDetail {
     public float $price;
     public float $subtotal;
     public string $createdAt;
+    public ?string $productName = null;
+    public ?string $productImage = null;
 
     public function __construct() {
         $this->quantity = 1;

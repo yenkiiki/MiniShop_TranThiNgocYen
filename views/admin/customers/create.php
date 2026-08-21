@@ -1,27 +1,40 @@
 <?php
-$pageTitle = "Thêm khách hàng mới";
+$pageTitle = "Thêm khách hàng mới - Mini Shop";
 ob_start();
 ?>
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Quản lý khách hàng</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/MINISHOP_TRANTHINGOCYEN/admin/dashboard">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="/MINISHOP_TRANTHINGOCYEN/admin/customer">Danh sách khách hàng</a></li>
-        <li class="breadcrumb-item active">Thêm mới</li>
-    </ol>
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">➕ Thêm khách hàng mới</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/customer">Danh sách khách hàng</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Thêm mới</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="<?= BASE_URL ?>admin/customer" class="btn btn-outline-secondary btn-sm px-3">
+                <i class="fas fa-arrow-left me-1"></i> Quay lại
+            </a>
+        </div>
+    </div>
 
     <?php if (!empty($error)): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <?= $error ?>
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> <?= htmlspecialchars($error) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
 
-    <div class="card mb-4">
-        <div class="card-header"><i class="fas fa-plus me-1"></i> Form thêm khách hàng mới</div>
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="m-0 fw-bold text-primary"><i class="fas fa-plus me-2"></i>Form thêm khách hàng mới</h6>
+        </div>
         <div class="card-body">
-            <form action="/MINISHOP_TRANTHINGOCYEN/admin/customer/create" method="POST">
+            <form action="<?= BASE_URL ?>admin/customer/create" method="POST">
                 <?= csrf_field() ?>
                 <div class="row mb-3">
                     <div class="col-md-6">
@@ -59,9 +72,9 @@ ob_start();
                     <textarea name="note" class="form-control" rows="3" placeholder="Nhập ghi chú..."><?= htmlspecialchars($_POST['note'] ?? '') ?></textarea>
                 </div>
 
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Lưu thông tin</button>
-                    <a href="/MINISHOP_TRANTHINGOCYEN/admin/customer" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-success px-4"><i class="fas fa-save me-1"></i> Lưu thông tin</button>
+                    <a href="<?= BASE_URL ?>admin/customer" class="btn btn-secondary px-4"><i class="fas fa-arrow-left me-1"></i> Quay lại</a>
                 </div>
             </form>
         </div>
@@ -70,5 +83,5 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-require_once __DIR__ . "/../../../views/admin/layouts/master.php";
+include __DIR__ . "/../../../views/admin/layouts/master.php";
 ?>

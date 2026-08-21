@@ -1,8 +1,8 @@
 <div class="container-fluid px-4">
     <h1 class="mt-4">Quản lý sản phẩm</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="index.php?controller=dashboard">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="index.php?controller=product&action=index">Danh sách sản phẩm</a></li>
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/product">Danh sách sản phẩm</a></li>
         <li class="breadcrumb-item active">Thêm mới sản phẩm</li>
     </ol>
 
@@ -108,6 +108,76 @@
                     </div>
                 </div>
 
+                <!-- KHỐI CẤU HÌNH BIẾN THỂ SẢN PHẨM & LIÊN KẾT HÌNH ẢNH -->
+                <div class="card border-primary border-opacity-25 mb-4 shadow-sm">
+                    <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center py-2">
+                        <div class="fw-bold text-primary">
+                            <i class="fas fa-layer-group me-1"></i> Quản lý Biến thể sản phẩm (Màu sắc / Phiên bản / Dung lượng...)
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm" id="btn-add-variant">
+                            <i class="fas fa-plus-circle me-1"></i> Thêm biến thể
+                        </button>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="alert alert-info py-2 px-3 mb-3 small">
+                            <i class="fas fa-info-circle me-1"></i> <strong>Quy tắc liên kết hình ảnh tự động:</strong>
+                            <ul class="mb-0 ps-3 mt-1">
+                                <li><strong>Biến thể 1:</strong> Gắn với <strong>Ảnh chính</strong> của sản phẩm.</li>
+                                <li><strong>Biến thể 2:</strong> Gắn với <strong>Ảnh phụ thứ 1</strong> (trong Gallery ảnh phụ tải lên).</li>
+                                <li><strong>Biến thể 3:</strong> Gắn với <strong>Ảnh phụ thứ 2</strong>... và tương tự cho các biến thể tiếp theo.</li>
+                            </ul>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle text-center mb-0" id="table-variants">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 50px;">#</th>
+                                        <th class="text-start" style="min-width: 180px;">Tên biến thể <span class="text-danger">*</span></th>
+                                        <th style="width: 130px;">Mã SKU</th>
+                                        <th style="width: 150px;">Giá bán (VNĐ)</th>
+                                        <th style="width: 150px;">Giá KM (VNĐ)</th>
+                                        <th style="width: 100px;">Tồn kho</th>
+                                        <th style="min-width: 160px;">Ảnh liên kết</th>
+                                        <th style="width: 60px;">Xóa</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="variant-list">
+                                    <!-- Mặc định có 1 biến thể đầu tiên gắn với ảnh chính -->
+                                    <tr class="variant-row">
+                                        <td class="fw-bold variant-index">1</td>
+                                        <td>
+                                            <input type="text" name="variants[0][variant_name]" class="form-control form-control-sm" placeholder="VD: Màu Đen / Bản Tiêu Chuẩn" value="Phiên bản Tiêu chuẩn" required>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="variants[0][sku]" class="form-control form-control-sm" placeholder="Tự tạo...">
+                                        </td>
+                                        <td>
+                                            <input type="number" step="1000" name="variants[0][price]" class="form-control form-control-sm" placeholder="Mặc định theo giá gốc">
+                                        </td>
+                                        <td>
+                                            <input type="number" step="1000" name="variants[0][discount_price]" class="form-control form-control-sm" placeholder="Mặc định theo KM">
+                                        </td>
+                                        <td>
+                                            <input type="number" name="variants[0][quantity]" class="form-control form-control-sm text-center" value="10" min="0">
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary px-2 py-1 variant-img-badge">
+                                                <i class="fas fa-image me-1"></i> Gắn với Ảnh chính
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-outline-danger btn-sm btn-remove-variant" title="Xóa">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <label for="status" class="form-label fw-bold">Trạng thái hiển thị</label>
@@ -125,7 +195,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <a href="index.php?controller=product&action=index" class="btn btn-secondary">
+                    <a href="<?= BASE_URL ?>admin/product" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Quay lại
                     </a>
                     <button type="submit" class="btn btn-primary">
@@ -177,9 +247,84 @@
                 }
                 reader.readAsDataURL(file);
             });
-            previewGallery.appendChild(container);
-        } else {
-            previewGallery.innerHTML = '<span class="text-muted fst-italic d-block border rounded p-4 bg-light">Chưa có hình ảnh phụ nào được chọn</span>';
-        }
-    });
+    // Quản lý thêm / xóa biến thể động
+    let variantIndex = 1;
+    const variantList = document.getElementById('variant-list');
+    const btnAddVariant = document.getElementById('btn-add-variant');
+
+    function updateVariantBadges() {
+        const rows = variantList.querySelectorAll('.variant-row');
+        rows.forEach((row, idx) => {
+            row.querySelector('.variant-index').textContent = idx + 1;
+            
+            // Cập nhật name attributes
+            row.querySelector('input[name*="[variant_name]"]').name = `variants[${idx}][variant_name]`;
+            row.querySelector('input[name*="[sku]"]').name = `variants[${idx}][sku]`;
+            row.querySelector('input[name*="[price]"]').name = `variants[${idx}][price]`;
+            row.querySelector('input[name*="[discount_price]"]').name = `variants[${idx}][discount_price]`;
+            row.querySelector('input[name*="[quantity]"]').name = `variants[${idx}][quantity]`;
+
+            // Cập nhật nhãn ảnh liên kết
+            const badge = row.querySelector('.variant-img-badge');
+            if (idx === 0) {
+                badge.className = 'badge bg-primary px-2 py-1 variant-img-badge';
+                badge.innerHTML = '<i class="fas fa-image me-1"></i> Gắn với Ảnh chính';
+            } else {
+                badge.className = 'badge bg-success px-2 py-1 variant-img-badge';
+                badge.innerHTML = `<i class="fas fa-images me-1"></i> Gắn với Ảnh phụ ${idx}`;
+            }
+        });
+    }
+
+    if (btnAddVariant) {
+        btnAddVariant.addEventListener('click', function () {
+            const currentCount = variantList.querySelectorAll('.variant-row').length;
+            const newTr = document.createElement('tr');
+            newTr.className = 'variant-row';
+            newTr.innerHTML = `
+                <td class="fw-bold variant-index">${currentCount + 1}</td>
+                <td>
+                    <input type="text" name="variants[${currentCount}][variant_name]" class="form-control form-control-sm" placeholder="VD: Màu Trắng / Switch Vàng" required>
+                </td>
+                <td>
+                    <input type="text" name="variants[${currentCount}][sku]" class="form-control form-control-sm" placeholder="Tự tạo...">
+                </td>
+                <td>
+                    <input type="number" step="1000" name="variants[${currentCount}][price]" class="form-control form-control-sm" placeholder="Mặc định theo giá gốc">
+                </td>
+                <td>
+                    <input type="number" step="1000" name="variants[${currentCount}][discount_price]" class="form-control form-control-sm" placeholder="Mặc định theo KM">
+                </td>
+                <td>
+                    <input type="number" name="variants[${currentCount}][quantity]" class="form-control form-control-sm text-center" value="10" min="0">
+                </td>
+                <td>
+                    <span class="badge bg-success px-2 py-1 variant-img-badge">
+                        <i class="fas fa-images me-1"></i> Gắn với Ảnh phụ ${currentCount}
+                    </span>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-variant" title="Xóa">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            variantList.appendChild(newTr);
+            updateVariantBadges();
+        });
+    }
+
+    if (variantList) {
+        variantList.addEventListener('click', function (e) {
+            if (e.target.closest('.btn-remove-variant')) {
+                const rows = variantList.querySelectorAll('.variant-row');
+                if (rows.length <= 1) {
+                    alert('Sản phẩm cần có tối thiểu 1 biến thể!');
+                    return;
+                }
+                e.target.closest('.variant-row').remove();
+                updateVariantBadges();
+            }
+        });
+    }
 </script>

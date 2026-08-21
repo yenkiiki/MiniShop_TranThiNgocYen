@@ -306,19 +306,32 @@ class ProductDAO extends BaseDAO
     {
         $list = [];
         try {
-            $sql = "SELECT p.*, c.catename, b.brandname 
+            $sql = "SELECT p.*, c.catename, b.brandname, s.discount_percent, s.sale_price 
                     FROM products p 
+                    JOIN (
+                        SELECT product_id, MAX(id) as max_sale_id 
+                        FROM sales 
+                        WHERE status = 1 
+                          AND (start_date IS NULL OR start_date <= CURDATE()) 
+                          AND (end_date IS NULL OR end_date >= CURDATE())
+                        GROUP BY product_id
+                    ) latest_s ON p.id = latest_s.product_id 
+                    JOIN sales s ON s.id = latest_s.max_sale_id 
                     LEFT JOIN categories c ON p.category_id = c.id 
                     LEFT JOIN brands b ON p.brand_id = b.id 
-                    WHERE p.discount_price > 0 AND p.discount_price < p.price 
-                    ORDER BY p.id DESC LIMIT ?";
+                    ORDER BY s.id DESC 
+                    LIMIT ?";
             $stmt = $this->prepare($sql);
             $stmt->bind_param("i", $limit);
             $stmt->execute();
             $result = $stmt->get_result();
 
             while ($row = $result->fetch_assoc()) {
-                $list[] = $this->mapRowToProduct($row);
+                $p = $this->mapRowToProduct($row);
+                if (isset($row['sale_price']) && (float)$row['sale_price'] > 0) {
+                    $p->discountPrice = (float)$row['sale_price'];
+                }
+                $list[] = $p;
             }
         } catch (Exception $e) {
             throw $e;
@@ -522,6 +535,10 @@ class ProductDAO extends BaseDAO
                 $types .= "d";
             }
 
+            if (!empty($filters['on_sale'])) {
+                $sql .= " AND p.discount_price > 0 AND p.discount_price < p.price";
+            }
+
             $sort = $filters['sort'] ?? 'latest';
             if ($sort === 'price_asc') {
                 $sql .= " ORDER BY p.price ASC";
@@ -598,6 +615,10 @@ class ProductDAO extends BaseDAO
                 $sql .= " AND p.price <= ?";
                 $params[] = (float)$filters['max_price'];
                 $types .= "d";
+            }
+
+            if (!empty($filters['on_sale'])) {
+                $sql .= " AND p.discount_price > 0 AND p.discount_price < p.price";
             }
 
             $stmt = $this->prepare($sql);

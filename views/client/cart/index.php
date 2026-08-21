@@ -29,32 +29,42 @@
                                 <img src="<?= BASE_URL ?>uploads/products/<?= htmlspecialchars($item['image']) ?>" 
                                      alt="<?= htmlspecialchars($item['productname']) ?>" 
                                      class="img-thumbnail" 
-                                     style="width: 70px; height: 70px; object-fit: cover;">
+                                     style="width: 70px; height: 70px; object-fit: cover;"
+                                     onerror="this.src='https://placehold.co/70x70?text=SP'">
                             </td>
                             <td class="text-start fw-semibold">
-                                <?= htmlspecialchars($item['productname']) ?>
+                                <a href="<?= BASE_URL ?>product/detail?id=<?= $item['productid'] ?>" class="text-decoration-none text-dark d-block">
+                                    <?= htmlspecialchars($item['productname']) ?>
+                                </a>
+                                <?php if (!empty($item['variant_name'])): ?>
+                                    <div class="mt-1">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small">
+                                            <i class="bi bi-tag-fill me-1"></i>Phiên bản: <?= htmlspecialchars($item['variant_name']) ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
                             </td>
                             <td class="text-danger fw-bold">
                                 <?= number_format($item['price'], 0, ',', '.') ?> đ
                             </td>
                             <td>
                                 <div class="input-group input-group-sm justify-content-center">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="updateCart(<?= $id ?>, <?= $item['quantity'] - 1 ?>)">-</button>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="updateCart('<?= $id ?>', <?= $item['quantity'] - 1 ?>)">-</button>
                                     <input type="number" 
                                            name="quantity[<?= $id ?>]" 
                                            value="<?= $item['quantity'] ?>" 
                                            min="1" 
                                            class="form-control form-control-sm text-center px-1" 
                                            style="max-width: 50px;"
-                                           onchange="updateCart(<?= $id ?>, parseInt(this.value))">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="updateCart(<?= $id ?>, <?= $item['quantity'] + 1 ?>)">+</button>
+                                           onchange="updateCart('<?= $id ?>', parseInt(this.value))">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="updateCart('<?= $id ?>', <?= $item['quantity'] + 1 ?>)">+</button>
                                 </div>
                             </td>
                             <td class="text-success fw-bold" id="subtotal-<?= $id ?>">
                                 <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?> đ
                             </td>
                             <td>
-                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeCart(<?= $id ?>)">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeCart('<?= $id ?>')">
                                     <i class="bi bi-trash"></i> Xóa
                                 </button>
                             </td>

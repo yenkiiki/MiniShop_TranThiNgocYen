@@ -2,8 +2,8 @@
 <div class="container-fluid px-4">
     <h1 class="mt-4">Quản lý tài khoản</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="index.php?controller=user&action=index">Danh sách</a></li>
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/user">Danh sách</a></li>
         <li class="breadcrumb-item active">Chi tiết</li>
     </ol>
 
@@ -11,8 +11,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <div><i class="fas fa-info-circle me-1"></i> Thông tin chi tiết: <strong><?= htmlspecialchars($user->userName) ?></strong></div>
             <div>
-                <a href="index.php?controller=user&action=edit&id=<?= $user->id ?>" class="btn btn-warning text-white btn-sm"><i class="fas fa-edit"></i> Sửa</a>
-                <a href="index.php?controller=user&action=delete&id=<?= $user->id ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?');"><i class="fas fa-trash"></i> Xóa</a>
+                <a href="<?= BASE_URL ?>admin/user/edit?id=<?= $user->id ?>" class="btn btn-warning text-white btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                <a href="<?= BASE_URL ?>admin/user/delete?id=<?= $user->id ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?');"><i class="fas fa-trash"></i> Xóa</a>
             </div>
         </div>
         <div class="card-body">
@@ -41,7 +41,7 @@
                     <tr><th class="bg-light">Ngày tạo</th><td><?= htmlspecialchars($user->createdAt) ?></td></tr>
                 </tbody>
             </table>
-            <a href="index.php?controller=user&action=index" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+            <a href="<?= BASE_URL ?>admin/user" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
         </div>
     </div>
 </div>

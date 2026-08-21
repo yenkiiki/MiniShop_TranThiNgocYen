@@ -146,5 +146,5 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-require_once __DIR__ . "/../../../views/admin/layouts/master.php";
-?>  
+include __DIR__ . "/../../../views/admin/layouts/master.php";
+?>
