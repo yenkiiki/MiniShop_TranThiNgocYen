@@ -2,7 +2,6 @@
     <h2 class="mb-4"><i class="bi bi-cart3"></i> <?= $title ?? "Giỏ hàng của bạn" ?></h2>
 
     <?php if (empty($cart)): ?>
-        <!-- Trường hợp giỏ hàng trống -->
         <div class="alert alert-warning text-center py-5">
             <h4 class="alert-heading mb-3">Giỏ hàng đang trống!</h4>
             <p class="text-muted">Má chưa chọn sản phẩm nào vào giỏ hàng cả.</p>
@@ -11,7 +10,6 @@
             </a>
         </div>
     <?php else: ?>
-        <!-- Trường hợp có sản phẩm trong giỏ hàng -->
         <div class="table-responsive shadow-sm rounded">
             <table class="table table-bordered align-middle text-center mb-0">
                 <thead class="table-dark">
@@ -19,14 +17,14 @@
                         <th style="width: 100px;">Hình ảnh</th>
                         <th class="text-start">Tên sản phẩm</th>
                         <th style="width: 150px;">Đơn giá</th>
-                        <th style="width: 120px;">Số lượng</th>
+                        <th style="width: 160px;">Số lượng</th>
                         <th style="width: 150px;">Thành tiền</th>
                         <th style="width: 100px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($cart as $id => $item): ?>
-                        <tr>
+                        <tr id="row-<?= $id ?>">
                             <td>
                                 <img src="<?= BASE_URL ?>uploads/products/<?= htmlspecialchars($item['image']) ?>" 
                                      alt="<?= htmlspecialchars($item['productname']) ?>" 
@@ -40,25 +38,25 @@
                                 <?= number_format($item['price'], 0, ',', '.') ?> đ
                             </td>
                             <td>
-                                <!-- Ô nhập số lượng (chuẩn bị cho bước Cập nhật) -->
-                                <input type="number" 
-                                       name="quantity[<?= $id ?>]" 
-                                       value="<?= $item['quantity'] ?>" 
-                                       min="1" 
-                                       class="form-control form-control-sm text-center mx-auto quantity-input" 
-                                       data-id="<?= $id ?>"
-                                       style="width: 70px;">
+                                <div class="input-group input-group-sm justify-content-center">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="updateCart(<?= $id ?>, <?= $item['quantity'] - 1 ?>)">-</button>
+                                    <input type="number" 
+                                           name="quantity[<?= $id ?>]" 
+                                           value="<?= $item['quantity'] ?>" 
+                                           min="1" 
+                                           class="form-control form-control-sm text-center px-1" 
+                                           style="max-width: 50px;"
+                                           onchange="updateCart(<?= $id ?>, parseInt(this.value))">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="updateCart(<?= $id ?>, <?= $item['quantity'] + 1 ?>)">+</button>
+                                </div>
                             </td>
-                            <td class="text-success fw-bold">
+                            <td class="text-success fw-bold" id="subtotal-<?= $id ?>">
                                 <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?> đ
                             </td>
                             <td>
-                                <!-- Nút Xóa sản phẩm -->
-                                <a href="<?= BASE_URL ?>cart/remove?id=<?= $id ?>" 
-                                   class="btn btn-outline-danger btn-sm" 
-                                   onclick="return confirm('Má có chắc muốn xóa sản phẩm này khỏi giỏ hàng không?');">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeCart(<?= $id ?>)">
                                     <i class="bi bi-trash"></i> Xóa
-                                </a>
+                                </button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -66,7 +64,6 @@
             </table>
         </div>
 
-        <!-- Phần tổng tiền và các nút điều hướng -->
         <div class="card mt-4 shadow-sm border-0 bg-light">
             <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
@@ -76,7 +73,7 @@
                 </div>
                 <div class="d-flex align-items-center gap-4">
                     <h4 class="mb-0 text-dark">
-                        Tổng tiền: <span class="text-danger fw-bold"><?= number_format($total ?? 0, 0, ',', '.') ?> đ</span>
+                        Tổng tiền: <span class="text-danger fw-bold" id="cartTotal"><?= number_format($total ?? 0, 0, ',', '.') ?> đ</span>
                     </h4>
                     <a href="<?= BASE_URL ?>cart/checkout" class="btn btn-success btn-lg px-4">
                         <i class="bi bi-bag-check"></i> Đặt hàng
